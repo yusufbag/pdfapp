@@ -423,6 +423,8 @@ async def update_pdf_annotation(pdf_id: str, annotation_id: str, annotation_data
         else:
             raise HTTPException(status_code=500, detail="Annotation güncellenemedi")
             
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Annotation güncelleme hatası: {str(e)}")
         raise HTTPException(status_code=500, detail="Annotation güncellenemedi")
