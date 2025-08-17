@@ -494,6 +494,7 @@ export default function PDFViewer() {
               
             } catch (error) {
               console.error('Sayfa render hatası:', error);
+              showError();
             }
           }
           
@@ -557,9 +558,25 @@ export default function PDFViewer() {
             loadPDF();
           };
           
-          // Auto load PDF when page is ready
+          // PDF.js initialization check ve auto load
           window.addEventListener('load', () => {
-            console.log('PDF viewer HTML yüklendi, PDF yükleme başlıyor...');
+            console.log('PDF viewer HTML yüklendi');
+            
+            // PDF.js yüklenip yüklenmediğini kontrol et
+            if (typeof pdfjsLib === 'undefined') {
+              console.error('PDF.js kütüphanesi yüklenemedi');
+              showError();
+              if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'pdfError',
+                  success: false,
+                  error: 'PDF.js library yüklenemedi'
+                }));
+              }
+              return;
+            }
+            
+            console.log('PDF.js başarıyla yüklendi, PDF yükleme başlıyor...');
             setTimeout(loadPDF, 500);
           });
         </script>
