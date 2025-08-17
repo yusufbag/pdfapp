@@ -779,6 +779,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
+  skipButton: {
+    backgroundColor: 'rgba(229, 62, 62, 0.8)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E53E3E',
+  },
+  skipText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
