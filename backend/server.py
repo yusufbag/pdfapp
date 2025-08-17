@@ -85,7 +85,7 @@ async def get_favorite_pdfs():
 async def get_pdf(pdf_id: str):
     """Belirli bir PDF dosyasını getir"""
     try:
-        pdf = await db.pdfs.find_one({"id": pdf_id})
+        pdf = await pdfs_collection.find_one({"id": pdf_id})
         if not pdf:
             raise HTTPException(status_code=404, detail="PDF bulunamadı")
         return PDFFile(**pdf)
