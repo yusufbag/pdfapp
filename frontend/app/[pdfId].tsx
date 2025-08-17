@@ -77,7 +77,25 @@ export default function PDFViewer() {
     }
   };
 
-  const openPDFInBrowser = async () => {
+  const openInAppViewer = () => {
+    if (!pdf) return;
+    
+    Alert.alert(
+      'Uygulama İçi Görüntüleyici',
+      'PDF uygulama içinde açılacak. Bu özellik beta aşamasındadır.',
+      [
+        { text: 'İptal', style: 'cancel' },
+        {
+          text: 'Aç',
+          onPress: () => {
+            console.log('PDF uygulama içinde açılıyor:', pdf.name);
+            setViewMode('viewer');
+            setWebViewLoading(true);
+          }
+        }
+      ]
+    );
+  };
     if (!pdf) return;
     
     try {
