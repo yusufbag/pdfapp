@@ -297,11 +297,11 @@ async def view_pdf(pdf_id: str):
 async def get_stats():
     """PDF istatistikleri getir"""
     try:
-        total_pdfs = await db.pdfs.count_documents({})
-        favorite_pdfs = await db.pdfs.count_documents({"isFavorite": True})
-        local_pdfs = await db.pdfs.count_documents({"type": "local"})
-        cloud_pdfs = await db.pdfs.count_documents({"type": "cloud"})
-        url_pdfs = await db.pdfs.count_documents({"type": "url"})
+        total_pdfs = await pdfs_collection.count_documents({})
+        favorite_pdfs = await pdfs_collection.count_documents({"isFavorite": True})
+        local_pdfs = await pdfs_collection.count_documents({"type": "local"})
+        cloud_pdfs = await pdfs_collection.count_documents({"type": "cloud"})
+        url_pdfs = await pdfs_collection.count_documents({"type": "url"})
         
         return {
             "totalPdfs": total_pdfs,
