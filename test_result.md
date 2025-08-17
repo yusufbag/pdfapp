@@ -252,12 +252,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "PDF Görüntüleyici"
-    - "Ana Sayfa PDF Listesi"
-  stuck_tasks:
-    - "PDF Görüntüleyici"
-  test_all: true
-  test_priority: "critical_first"
+    - "All tasks completed and tested"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "completed"
 
 agent_communication:
     - agent: "main"
