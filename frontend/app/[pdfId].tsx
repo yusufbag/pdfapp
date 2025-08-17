@@ -109,7 +109,7 @@ export default function PDFViewer() {
     router.back();
   };
 
-  // PDF görüntüleme için HTML içeriği oluştur
+  // PDF görüntüleme için HTML içeriği oluştur - Mobil optimize
   const createPDFViewerHTML = (pdfUri: string, fileData?: string) => {
     let pdfSrc = pdfUri;
     
@@ -122,13 +122,20 @@ export default function PDFViewer() {
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+        <title>PDF Görüntüleyici</title>
         <style>
-          body {
+          * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
+            overflow: hidden;
           }
           
           .pdf-container {
@@ -136,96 +143,197 @@ export default function PDFViewer() {
             height: 100vh;
             display: flex;
             flex-direction: column;
+            background: #333;
           }
           
           .pdf-controls {
-            background-color: #333;
+            background: linear-gradient(135deg, #E53E3E 0%, #C53030 100%);
             color: white;
-            padding: 10px;
+            padding: 8px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
+            min-height: 44px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           }
           
           .pdf-viewer {
             flex: 1;
             border: none;
+            width: 100%;
+            background: white;
           }
           
-          .loading {
+          .loading-container {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 200px;
+            flex-direction: column;
+            background: #f5f5f5;
             color: #666;
           }
           
-          .error {
+          .error-container {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 200px;
-            color: #e53e3e;
             flex-direction: column;
+            background: #f5f5f5;
+            color: #e53e3e;
+            padding: 20px;
+            text-align: center;
           }
           
           .zoom-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            align-items: center;
           }
           
           .zoom-button {
-            background-color: #555;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 36px;
+            transition: all 0.2s;
           }
           
           .zoom-button:hover {
-            background-color: #666;
+            background: rgba(255, 255, 255, 0.3);
+          }
+          
+          .zoom-button:active {
+            transform: scale(0.95);
+          }
+          
+          .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E5E5E5;
+            border-top: 4px solid #E53E3E;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          .status-text {
+            font-size: 16px;
+            font-weight: 500;
+          }
+          
+          .retry-button {
+            margin-top: 16px;
+            background: #E53E3E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
           }
         </style>
       </head>
       <body>
         <div class="pdf-container">
           <div class="pdf-controls">
-            <span id="page-info">PDF Yükleniyor...</span>
+            <span id="status-text" class="status-text">📄 PDF Yükleniyor...</span>
             <div class="zoom-controls">
-              <button class="zoom-button" onclick="zoomOut()">-</button>
-              <span id="zoom-level">${Math.round(zoom * 100)}%</span>
+              <button class="zoom-button" onclick="zoomOut()">−</button>
+              <span id="zoom-level">100%</span>
               <button class="zoom-button" onclick="zoomIn()">+</button>
             </div>
+          </div>
+          
+          <div id="loading-container" class="loading-container">
+            <div class="spinner"></div>
+            <div class="status-text">PDF hazırlanıyor...</div>
+            <div style="font-size: 12px; color: #999; margin-top: 8px;">Lütfen bekleyin</div>
+          </div>
+          
+          <div id="error-container" class="error-container" style="display: none;">
+            <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+            <div class="status-text">PDF Yüklenemedi</div>
+            <div style="font-size: 14px; margin-top: 8px;">Dosya bozuk olabilir veya desteklenmiyor</div>
+            <button class="retry-button" onclick="retryLoad()">Tekrar Dene</button>
           </div>
           
           <iframe 
             id="pdf-viewer"
             class="pdf-viewer"
-            src="${pdfSrc}#zoom=${Math.round(zoom * 100)}"
+            style="display: none;"
             onload="onPDFLoad()"
             onerror="onPDFError()"
+            title="PDF Viewer"
           ></iframe>
         </div>
         
         <script>
-          let currentZoom = ${zoom};
+          let currentZoom = 1;
+          let pdfLoaded = false;
+          let loadTimeout = null;
+          
+          // PDF yükleme timeout (10 saniye)
+          function startLoadTimeout() {
+            clearTimeout(loadTimeout);
+            loadTimeout = setTimeout(() => {
+              if (!pdfLoaded) {
+                onPDFError();
+              }
+            }, 10000);
+          }
           
           function onPDFLoad() {
-            document.getElementById('page-info').textContent = '✅ PDF Yüklendi';
-            window.ReactNativeWebView.postMessage(JSON.stringify({
+            clearTimeout(loadTimeout);
+            pdfLoaded = true;
+            
+            document.getElementById('loading-container').style.display = 'none';
+            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('pdf-viewer').style.display = 'block';
+            document.getElementById('status-text').textContent = '✅ PDF Yüklendi';
+            
+            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'pdfLoaded',
               zoom: currentZoom
             }));
           }
           
           function onPDFError() {
+            clearTimeout(loadTimeout);
+            
+            document.getElementById('loading-container').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'none';
-            document.getElementById('page-info').innerHTML = '❌ PDF Yüklenemedi';
-            window.ReactNativeWebView.postMessage(JSON.stringify({
+            document.getElementById('error-container').style.display = 'flex';
+            document.getElementById('status-text').textContent = '❌ PDF Yüklenemedi';
+            
+            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'pdfError'
             }));
+          }
+          
+          function retryLoad() {
+            pdfLoaded = false;
+            document.getElementById('loading-container').style.display = 'flex';
+            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('pdf-viewer').style.display = 'none';
+            document.getElementById('status-text').textContent = '🔄 Yeniden Yükleniyor...';
+            
+            // PDF'i yeniden yükle
+            const iframe = document.getElementById('pdf-viewer');
+            iframe.src = iframe.src;
+            startLoadTimeout();
           }
           
           function zoomIn() {
@@ -246,31 +354,31 @@ export default function PDFViewer() {
             const iframe = document.getElementById('pdf-viewer');
             const zoomLevel = document.getElementById('zoom-level');
             
-            iframe.src = iframe.src.split('#')[0] + '#zoom=' + Math.round(currentZoom * 100);
-            zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+            if (iframe && iframe.src) {
+              iframe.src = iframe.src.split('#')[0] + '#zoom=' + Math.round(currentZoom * 100);
+            }
             
-            window.ReactNativeWebView.postMessage(JSON.stringify({
+            if (zoomLevel) {
+              zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+            }
+            
+            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'zoomChanged',
               zoom: currentZoom
             }));
           }
           
-          // PDF yüklendikten sonra sayfa bilgilerini güncelle
-          setInterval(() => {
-            try {
-              const iframe = document.getElementById('pdf-viewer');
-              if (iframe && iframe.contentWindow) {
-                // PDF.js ile sayfa bilgilerini al (eğer mümkünse)
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  type: 'pageInfo',
-                  currentPage: 1,
-                  totalPages: 1
-                }));
-              }
-            } catch (e) {
-              // Sayfa bilgisi alınamadı
-            }
-          }, 2000);
+          // PDF'i yükle
+          function loadPDF() {
+            const iframe = document.getElementById('pdf-viewer');
+            iframe.src = '${pdfSrc}#zoom=100';
+            startLoadTimeout();
+          }
+          
+          // Sayfa yüklendiğinde PDF'i başlat
+          window.onload = function() {
+            setTimeout(loadPDF, 100);
+          };
         </script>
       </body>
       </html>
