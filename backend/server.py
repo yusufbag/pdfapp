@@ -22,6 +22,10 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'pdf_viewer_db')]
 
+# Collections
+pdfs_collection = db.pdfs
+annotations_collection = db.annotations
+
 # Create the main app without a prefix
 app = FastAPI()
 
