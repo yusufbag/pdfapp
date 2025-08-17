@@ -503,6 +503,211 @@ class PDFBackendTester:
             self.log_test("Delete PDF", False, f"Exception: {str(e)}")
             return False
 
+    def test_get_pdf_annotations(self):
+        """Test GET /api/pdfs/{pdf_id}/annotations - Get PDF annotations"""
+        # Use the provided PDF ID from the request
+        test_pdf_id = "3eec1fb2-c9f1-4518-8d70-c3efce66b956"
+        
+        try:
+            response = self.session.get(f"{self.base_url}/pdfs/{test_pdf_id}/annotations")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "annotations" in data and isinstance(data["annotations"], list):
+                    self.log_test("Get PDF Annotations", True, f"Retrieved {len(data['annotations'])} annotations for PDF {test_pdf_id}")
+                    return True
+                else:
+                    self.log_test("Get PDF Annotations", False, "Response missing annotations field or not a list")
+                    return False
+            elif response.status_code == 404:
+                self.log_test("Get PDF Annotations", False, f"PDF {test_pdf_id} not found")
+                return False
+            else:
+                self.log_test("Get PDF Annotations", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get PDF Annotations", False, f"Exception: {str(e)}")
+            return False
+
+    def test_add_pdf_annotation(self):
+        """Test POST /api/pdfs/{pdf_id}/annotations - Add new annotation"""
+        # Use the provided PDF ID from the request
+        test_pdf_id = "3eec1fb2-c9f1-4518-8d70-c3efce66b956"
+        
+        try:
+            # Create test annotation data
+            annotation_data = {
+                "type": "text",
+                "x": 100,
+                "y": 200,
+                "width": 150,
+                "height": 30,
+                "page": 1,
+                "content": "Bu bir test notu - PDF annotation sistemi çalışıyor!",
+                "color": "#FFFF00"
+            }
+            
+            response = self.session.post(
+                f"{self.base_url}/pdfs/{test_pdf_id}/annotations",
+                json=annotation_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if "message" in result and "annotation" in result:
+                    annotation = result["annotation"]
+                    if "id" in annotation and annotation["content"] == annotation_data["content"]:
+                        # Store annotation ID for later tests
+                        self.test_annotation_id = annotation["id"]
+                        self.log_test("Add PDF Annotation", True, f"Added annotation with ID: {self.test_annotation_id}")
+                        return True
+                    else:
+                        self.log_test("Add PDF Annotation", False, "Annotation data mismatch")
+                        return False
+                else:
+                    self.log_test("Add PDF Annotation", False, "Response missing required fields")
+                    return False
+            elif response.status_code == 404:
+                self.log_test("Add PDF Annotation", False, f"PDF {test_pdf_id} not found")
+                return False
+            else:
+                self.log_test("Add PDF Annotation", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Add PDF Annotation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_update_pdf_annotation(self):
+        """Test PUT /api/pdfs/{pdf_id}/annotations/{annotation_id} - Update annotation"""
+        # Use the provided PDF ID from the request
+        test_pdf_id = "3eec1fb2-c9f1-4518-8d70-c3efce66b956"
+        
+        if not hasattr(self, 'test_annotation_id') or not self.test_annotation_id:
+            self.log_test("Update PDF Annotation", False, "No test annotation ID available")
+            return False
+            
+        try:
+            # Update annotation data
+            update_data = {
+                "content": "Güncellenmiş not - annotation güncelleme testi başarılı!",
+                "color": "#00FF00",
+                "x": 120,
+                "y": 220
+            }
+            
+            response = self.session.put(
+                f"{self.base_url}/pdfs/{test_pdf_id}/annotations/{self.test_annotation_id}",
+                json=update_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if "message" in result:
+                    self.log_test("Update PDF Annotation", True, f"Updated annotation {self.test_annotation_id}")
+                    return True
+                else:
+                    self.log_test("Update PDF Annotation", False, "Response missing message field")
+                    return False
+            elif response.status_code == 404:
+                self.log_test("Update PDF Annotation", False, "Annotation not found")
+                return False
+            else:
+                self.log_test("Update PDF Annotation", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Update PDF Annotation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_delete_pdf_annotation(self):
+        """Test DELETE /api/pdfs/{pdf_id}/annotations/{annotation_id} - Delete annotation"""
+        # Use the provided PDF ID from the request
+        test_pdf_id = "3eec1fb2-c9f1-4518-8d70-c3efce66b956"
+        
+        if not hasattr(self, 'test_annotation_id') or not self.test_annotation_id:
+            self.log_test("Delete PDF Annotation", False, "No test annotation ID available")
+            return False
+            
+        try:
+            response = self.session.delete(
+                f"{self.base_url}/pdfs/{test_pdf_id}/annotations/{self.test_annotation_id}"
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if "message" in result:
+                    self.log_test("Delete PDF Annotation", True, f"Deleted annotation {self.test_annotation_id}")
+                    return True
+                else:
+                    self.log_test("Delete PDF Annotation", False, "Response missing message field")
+                    return False
+            elif response.status_code == 404:
+                self.log_test("Delete PDF Annotation", False, "Annotation not found")
+                return False
+            else:
+                self.log_test("Delete PDF Annotation", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Delete PDF Annotation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_annotation_error_scenarios(self):
+        """Test annotation error scenarios"""
+        print("=== Testing Annotation Error Scenarios ===")
+        
+        # Test annotations for non-existent PDF
+        try:
+            fake_pdf_id = str(uuid.uuid4())
+            response = self.session.get(f"{self.base_url}/pdfs/{fake_pdf_id}/annotations")
+            if response.status_code == 404:
+                self.log_test("Annotations Non-existent PDF", True, "Correctly returned 404 for non-existent PDF")
+            else:
+                self.log_test("Annotations Non-existent PDF", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Annotations Non-existent PDF", False, f"Exception: {str(e)}")
+
+        # Test adding annotation to non-existent PDF
+        try:
+            fake_pdf_id = str(uuid.uuid4())
+            annotation_data = {"type": "text", "content": "test", "x": 0, "y": 0}
+            response = self.session.post(f"{self.base_url}/pdfs/{fake_pdf_id}/annotations", json=annotation_data)
+            if response.status_code == 404:
+                self.log_test("Add Annotation Non-existent PDF", True, "Correctly returned 404 for non-existent PDF")
+            else:
+                self.log_test("Add Annotation Non-existent PDF", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Add Annotation Non-existent PDF", False, f"Exception: {str(e)}")
+
+        # Test updating non-existent annotation
+        try:
+            test_pdf_id = "3eec1fb2-c9f1-4518-8d70-c3efce66b956"
+            fake_annotation_id = str(uuid.uuid4())
+            update_data = {"content": "test update"}
+            response = self.session.put(f"{self.base_url}/pdfs/{test_pdf_id}/annotations/{fake_annotation_id}", json=update_data)
+            if response.status_code == 404:
+                self.log_test("Update Non-existent Annotation", True, "Correctly returned 404 for non-existent annotation")
+            else:
+                self.log_test("Update Non-existent Annotation", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Update Non-existent Annotation", False, f"Exception: {str(e)}")
+
+        # Test deleting non-existent annotation
+        try:
+            test_pdf_id = "3eec1fb2-c9f1-4518-8d70-c3efce66b956"
+            fake_annotation_id = str(uuid.uuid4())
+            response = self.session.delete(f"{self.base_url}/pdfs/{test_pdf_id}/annotations/{fake_annotation_id}")
+            if response.status_code == 404:
+                self.log_test("Delete Non-existent Annotation", True, "Correctly returned 404 for non-existent annotation")
+            else:
+                self.log_test("Delete Non-existent Annotation", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("Delete Non-existent Annotation", False, f"Exception: {str(e)}")
+
     def test_error_scenarios(self):
         """Test error scenarios"""
         print("=== Testing Error Scenarios ===")
