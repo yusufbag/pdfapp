@@ -116,10 +116,42 @@ export default function PDFViewer() {
     }
   };
 
-  const sharePDF = () => {
+  const openPDFInBrowser = async () => {
     if (!pdf) return;
-    Alert.alert('Paylaş', `${pdf.name} paylaşılıyor...`);
-    // TODO: Implement sharing functionality
+    
+    try {
+      let pdfUrl = pdf.uri;
+      
+      // Eğer base64 data varsa, önce bir web URL'ine dönüştürmeliyiz
+      if (pdf.fileData && pdfUrl.startsWith('data:')) {
+        // Base64 PDF'i için özel endpoint kullan
+        pdfUrl = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf.id}/view`;
+        
+        Alert.alert(
+          'PDF Tarayıcıda Açılıyor',
+          `${pdf.name} varsayılan tarayıcınızda açılacak.`,
+          [
+            { text: 'İptal', style: 'cancel' },
+            {
+              text: 'Aç',
+              onPress: async () => {
+                const result = await WebBrowser.openBrowserAsync(pdfUrl);
+                console.log('WebBrowser result:', result);
+              }
+            }
+          ]
+        );
+      } else if (pdfUrl.startsWith('http')) {
+        // External URL'ler direkt açılabilir
+        const result = await WebBrowser.openBrowserAsync(pdfUrl);
+        console.log('WebBrowser result:', result);
+      } else {
+        Alert.alert('Hata', 'Bu PDF tarayıcıda açılamaz.');
+      }
+    } catch (error) {
+      console.error('WebBrowser hatası:', error);
+      Alert.alert('Hata', 'PDF tarayıcıda açılırken bir sorun oluştu.');
+    }
   };
 
   const goBack = () => {
