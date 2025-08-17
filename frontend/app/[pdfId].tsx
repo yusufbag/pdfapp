@@ -117,24 +117,16 @@ export default function PDFViewer() {
     }
   };
 
-  const createSolidPDFViewerHTML = (pdfUri: string, fileData?: string) => {
+  const createSimplePDFViewerHTML = (pdfUri: string, fileData?: string) => {
+    // Basit iframe çözümü - direct PDF viewing
     let pdfSrc = pdfUri;
-    let useGoogleViewer = false;
     
-    // Base64 data varsa backend endpoint kullan, yoksa Google viewer
+    // Base64 data varsa backend endpoint kullan
     if (fileData) {
       pdfSrc = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf?.id}/view`;
-      useGoogleViewer = true; // Google viewer backend endpoint'i ile çalışabilir
-    } else if (pdfUri.startsWith('http')) {
-      useGoogleViewer = true; // HTTP URL'ler için Google viewer
-    } else {
+    } else if (!pdfUri.startsWith('http')) {
       pdfSrc = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf?.id}/view`;
-      useGoogleViewer = true;
     }
-
-    const viewerUrl = useGoogleViewer 
-      ? `https://docs.google.com/viewer?url=${encodeURIComponent(pdfSrc)}&embedded=true`
-      : pdfSrc;
 
     return `
       <!DOCTYPE html>
@@ -152,8 +144,7 @@ export default function PDFViewer() {
 
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #2c2c2c;
-            color: white;
+            background: #f5f5f5;
             overflow: hidden;
             height: 100vh;
           }
@@ -163,7 +154,7 @@ export default function PDFViewer() {
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background: #2c2c2c;
+            background: #f5f5f5;
           }
           
           .pdf-header {
@@ -173,7 +164,7 @@ export default function PDFViewer() {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             z-index: 1000;
           }
           
@@ -186,33 +177,33 @@ export default function PDFViewer() {
           .pdf-frame {
             flex: 1;
             width: 100%;
-            height: calc(100vh - 60px);
+            height: calc(100vh - 50px);
             border: none;
             background: white;
           }
           
           .loading-overlay {
             position: absolute;
-            top: 0;
+            top: 50px;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+            background: #f5f5f5;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 1000;
           }
           
           .loading-spinner {
-            width: 64px;
-            height: 64px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid #E53E3E;
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(229, 62, 62, 0.2);
+            border-top: 3px solid #E53E3E;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
           }
           
           @keyframes spin {
@@ -221,30 +212,31 @@ export default function PDFViewer() {
           }
           
           .loading-text {
-            font-size: 18px;
-            color: white;
+            font-size: 16px;
+            color: #333;
             font-weight: 500;
             margin-bottom: 8px;
           }
           
-          .loading-subtext {
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-            max-width: 280px;
-            line-height: 1.5;
-          }
-          
           .error-container {
+            background: #f5f5f5;
             text-align: center;
             padding: 40px;
-            color: white;
+            color: #333;
           }
           
           .error-title {
-            font-size: 20px;
+            font-size: 18px;
             color: #E53E3E;
             margin-bottom: 12px;
+            font-weight: 600;
+          }
+          
+          .error-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
           }
           
           .retry-button {
@@ -254,8 +246,13 @@ export default function PDFViewer() {
             padding: 12px 24px;
             border-radius: 6px;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 16px;
+            transition: background 0.2s;
+          }
+          
+          .retry-button:hover {
+            background: #C53030;
           }
         </style>
       </head>
@@ -267,29 +264,30 @@ export default function PDFViewer() {
           
           <div id="loading-overlay" class="loading-overlay">
             <div class="loading-spinner"></div>
-            <div class="loading-text">PDF Yükleniyor</div>
-            <div class="loading-subtext">Google Drive viewer ile güvenli görüntüleme</div>
+            <div class="loading-text">PDF Yükleniyor...</div>
           </div>
           
           <iframe 
             id="pdf-frame" 
             class="pdf-frame" 
             style="display: none;"
-            src="${viewerUrl}"
-            onload="hideLoading()"
-            onerror="showError()"
+            src="${pdfSrc}"
           ></iframe>
         </div>
         
         <script type="text/javascript">
           let loadTimeout;
+          let hasLoaded = false;
           
-          function hideLoading() {
+          function showPDF() {
+            if (hasLoaded) return;
+            hasLoaded = true;
+            
             clearTimeout(loadTimeout);
             document.getElementById('loading-overlay').style.display = 'none';
             document.getElementById('pdf-frame').style.display = 'block';
             
-            console.log('PDF başarıyla yüklendi');
+            console.log('✅ PDF başarıyla yüklendi');
             
             // React Native'e bildir
             if (window.ReactNativeWebView) {
@@ -300,35 +298,52 @@ export default function PDFViewer() {
             }
           }
           
-          function showError() {
+          function showError(message) {
             clearTimeout(loadTimeout);
             document.getElementById('loading-overlay').innerHTML = \`
               <div class="error-container">
-                <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
-                <div class="error-title">PDF Yüklenemedi</div>
-                <div>Bu PDF dosyası bozuk olabilir veya desteklenmiyor olabilir.</div>
+                <div style="font-size: 48px; margin-bottom: 16px;">📄</div>
+                <div class="error-title">PDF Görüntülenemedi</div>
+                <div class="error-text">Bu PDF dosyası şu anda görüntülenemiyor. Lütfen tekrar deneyin.</div>
                 <button class="retry-button" onclick="location.reload()">🔄 Tekrar Dene</button>
               </div>
             \`;
             
-            console.error('PDF yükleme hatası');
+            console.error('❌ PDF yükleme hatası:', message);
             
             if (window.ReactNativeWebView) {
               window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'pdfError',
                 success: false,
-                error: 'PDF yüklenemedi'
+                error: message || 'PDF yüklenemedi'
               }));
             }
           }
           
-          // 15 saniye sonra timeout
-          loadTimeout = setTimeout(() => {
-            console.log('PDF yükleme timeout');
-            showError();
-          }, 15000);
+          // PDF frame event listeners
+          const pdfFrame = document.getElementById('pdf-frame');
           
-          console.log('PDF viewer başlatıldı:', '${viewerUrl}');
+          pdfFrame.onload = function() {
+            setTimeout(showPDF, 1000); // 1 saniye bekle sonra göster
+          };
+          
+          pdfFrame.onerror = function() {
+            showError('PDF yükleme hatası');
+          };
+          
+          // 10 saniye timeout
+          loadTimeout = setTimeout(() => {
+            showError('PDF yükleme zaman aşımı');
+          }, 10000);
+          
+          // Hemen yüklenmeye başla
+          setTimeout(() => {
+            if (!hasLoaded) {
+              showPDF(); // Yüklenmemiş olsa bile 3 saniye sonra göster
+            }
+          }, 3000);
+          
+          console.log('🚀 PDF viewer başlatıldı:', '${pdfSrc}');
         </script>
       </body>
       </html>
