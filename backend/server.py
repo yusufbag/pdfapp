@@ -65,7 +65,7 @@ class PDFUpdate(BaseModel):
 async def get_pdfs():
     """Tüm PDF dosyalarını getir"""
     try:
-        pdfs = await db.pdfs.find().to_list(1000)
+        pdfs = await pdfs_collection.find().to_list(1000)
         return [PDFFile(**pdf) for pdf in pdfs]
     except Exception as e:
         logging.error(f"PDF'ler getirilirken hata: {e}")
