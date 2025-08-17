@@ -119,12 +119,23 @@ export default function PDFViewer() {
 
   const createSolidPDFViewerHTML = (pdfUri: string, fileData?: string) => {
     let pdfSrc = pdfUri;
+    let useGoogleViewer = false;
     
+    // Base64 data varsa backend endpoint kullan, yoksa Google viewer
     if (fileData) {
-      pdfSrc = `data:application/pdf;base64,${fileData}`;
+      pdfSrc = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf?.id}/view`;
+      useGoogleViewer = true; // Google viewer backend endpoint'i ile çalışabilir
+    } else if (pdfUri.startsWith('http')) {
+      useGoogleViewer = true; // HTTP URL'ler için Google viewer
+    } else {
+      pdfSrc = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf?.id}/view`;
+      useGoogleViewer = true;
     }
 
-    // Basit Google Drive Viewer çözümü
+    const viewerUrl = useGoogleViewer 
+      ? `https://docs.google.com/viewer?url=${encodeURIComponent(pdfSrc)}&embedded=true`
+      : pdfSrc;
+
     return `
       <!DOCTYPE html>
       <html>
@@ -223,6 +234,29 @@ export default function PDFViewer() {
             max-width: 280px;
             line-height: 1.5;
           }
+          
+          .error-container {
+            text-align: center;
+            padding: 40px;
+            color: white;
+          }
+          
+          .error-title {
+            font-size: 20px;
+            color: #E53E3E;
+            margin-bottom: 12px;
+          }
+          
+          .retry-button {
+            background: #E53E3E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+          }
         </style>
       </head>
       <body>
@@ -241,16 +275,21 @@ export default function PDFViewer() {
             id="pdf-frame" 
             class="pdf-frame" 
             style="display: none;"
-            src="https://docs.google.com/viewer?url=${encodeURIComponent(pdfSrc)}&embedded=true"
+            src="${viewerUrl}"
             onload="hideLoading()"
             onerror="showError()"
           ></iframe>
         </div>
         
         <script type="text/javascript">
+          let loadTimeout;
+          
           function hideLoading() {
+            clearTimeout(loadTimeout);
             document.getElementById('loading-overlay').style.display = 'none';
             document.getElementById('pdf-frame').style.display = 'block';
+            
+            console.log('PDF başarıyla yüklendi');
             
             // React Native'e bildir
             if (window.ReactNativeWebView) {
@@ -262,11 +301,17 @@ export default function PDFViewer() {
           }
           
           function showError() {
+            clearTimeout(loadTimeout);
             document.getElementById('loading-overlay').innerHTML = \`
-              <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
-              <div style="font-size: 20px; color: #E53E3E; margin-bottom: 12px;">PDF Yüklenemedi</div>
-              <div style="font-size: 14px; color: rgba(255,255,255,0.8);">Bu PDF dosyası bozuk olabilir veya desteklenmiyor olabilir.</div>
+              <div class="error-container">
+                <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+                <div class="error-title">PDF Yüklenemedi</div>
+                <div>Bu PDF dosyası bozuk olabilir veya desteklenmiyor olabilir.</div>
+                <button class="retry-button" onclick="location.reload()">🔄 Tekrar Dene</button>
+              </div>
             \`;
+            
+            console.error('PDF yükleme hatası');
             
             if (window.ReactNativeWebView) {
               window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -277,12 +322,13 @@ export default function PDFViewer() {
             }
           }
           
-          // 10 saniye sonra timeout
-          setTimeout(() => {
-            if (document.getElementById('loading-overlay').style.display !== 'none') {
-              showError();
-            }
-          }, 10000);
+          // 15 saniye sonra timeout
+          loadTimeout = setTimeout(() => {
+            console.log('PDF yükleme timeout');
+            showError();
+          }, 15000);
+          
+          console.log('PDF viewer başlatıldı:', '${viewerUrl}');
         </script>
       </body>
       </html>
