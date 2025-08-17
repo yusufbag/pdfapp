@@ -434,11 +434,33 @@ export default function Index() {
               style={styles.addMenuItem} 
               onPress={() => {
                 setShowAddMenu(false);
+                takePhotoAndConvertToPDF();
+              }}
+            >
+              <Ionicons name="camera" size={20} color="#E53E3E" />
+              <Text style={styles.addMenuText}>📷 Kamera ile Çek</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.addMenuItem} 
+              onPress={() => {
+                setShowAddMenu(false);
+                pickImageFromGallery();
+              }}
+            >
+              <Ionicons name="images" size={20} color="#E53E3E" />
+              <Text style={styles.addMenuText}>🖼️ Galeriden Seç</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.addMenuItem} 
+              onPress={() => {
+                setShowAddMenu(false);
                 addPDFFromURL();
               }}
             >
               <Ionicons name="link" size={20} color="#E53E3E" />
-              <Text style={styles.addMenuText}>URL'den PDF Ekle</Text>
+              <Text style={styles.addMenuText}>🔗 URL'den Ekle</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
