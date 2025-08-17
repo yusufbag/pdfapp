@@ -336,6 +336,8 @@ async def get_pdf_annotations(pdf_id: str):
         
         return {"annotations": annotations}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Annotations getirme hatası: {str(e)}")
         raise HTTPException(status_code=500, detail="Annotations getirilemedi")
