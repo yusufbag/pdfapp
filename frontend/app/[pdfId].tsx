@@ -988,6 +988,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
+    flexWrap: 'wrap',
   },
   toolButton: {
     backgroundColor: '#E53E3E',
@@ -995,11 +996,33 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 6,
     marginRight: 8,
+    marginBottom: 8,
+  },
+  activeToolButton: {
+    backgroundColor: '#28a745',
   },
   toolButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: '600',
+  },
+  colorPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  colorButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginHorizontal: 4,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedColorButton: {
+    borderColor: '#333',
+    borderWidth: 3,
   },
   viewerContainer: {
     padding: 20,
