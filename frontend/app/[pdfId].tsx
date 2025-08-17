@@ -516,19 +516,19 @@ export default function PDFViewer() {
           <WebView
             style={styles.webView}
             source={{ 
-              html: createSolidPDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
+              html: createSimplePDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
             }}
             onMessage={handleWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
-            allowsInlineMediaPlayback={true}
+            allowsInlineMediaPlaybook={true}
             mediaPlaybackRequiresUserAction={false}
             scalesPageToFit={true}
             startInLoadingState={false}
             mixedContentMode="always"
             allowsFullscreenVideo={false}
             bounces={false}
-            scrollEnabled={false}
+            scrollEnabled={true}
           />
           
           {!webViewLoading && (
