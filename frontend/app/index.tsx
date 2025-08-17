@@ -434,7 +434,7 @@ export default function Index() {
               style={styles.addMenuItem} 
               onPress={() => {
                 setShowAddMenu(false);
-                router.push('/add-url');
+                addPDFFromURL();
               }}
             >
               <Ionicons name="link" size={20} color="#E53E3E" />
