@@ -628,7 +628,7 @@ export default function PDFViewer() {
             }
           }, 3000);
           
-          console.log('🚀 PDF viewer başlatıldı:', '${pdfSrc}');
+          console.log('🚀 PDF viewer başlatıldı:', ${pdfSrc});
         </script>
       </body>
       </html>
