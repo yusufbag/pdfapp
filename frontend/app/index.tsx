@@ -17,7 +17,189 @@ import * as FileSystem from 'expo-file-system';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
-const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
+const EXPO_PUBLIC_BACKEND_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
+
+  // Kamera/Galeri PDF Çevirme Fonksiyonları
+  const requestCameraPermission = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Hata', 'Kamera erişimi gerekiyor!');
+      return false;
+    }
+    return true;
+  };
+
+  const requestMediaLibraryPermission = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Hata', 'Galeri erişimi gerekiyor!');
+      return false;
+    }
+    return true;
+  };
+
+  const takePhotoAndConvertToPDF = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await convertImageToPDF(result.assets[0], 'Kamera Çekimi');
+      }
+    } catch (error) {
+      console.error('Kamera hatası:', error);
+      Alert.alert('Hata', 'Fotoğraf çekme sırasında hata oluştu');
+    }
+  };
+
+  const pickImageFromGallery = async () => {
+    const hasPermission = await requestMediaLibraryPermission();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        allowsMultipleSelection: false,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        await convertImageToPDF(result.assets[0], 'Galeri Seçimi');
+      }
+    } catch (error) {
+      console.error('Galeri hatası:', error);
+      Alert.alert('Hata', 'Resim seçme sırasında hata oluştu');
+    }
+  };
+
+  const convertImageToPDF = async (imageAsset: any, source: string) => {
+    try {
+      Alert.alert('İşleniyor', 'Resminiz PDF\'e çevriliyor...');
+      
+      // Resmi base64'e çevir
+      const base64 = await FileSystem.readAsStringAsync(imageAsset.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // HTML şablonu ile PDF oluştur
+      const htmlContent = `
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>PDF Belgesi</title>
+            <style>
+              body {
+                margin: 0;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+              }
+              .image-container {
+                text-align: center;
+                margin: 20px 0;
+              }
+              img {
+                max-width: 100%;
+                height: auto;
+                border: 1px solid #ddd;
+                border-radius: 8px;//box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+              }
+              .header {
+                color: #333;
+                border-bottom: 2px solid #E53E3E;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+              }
+              .footer {
+                margin-top: 30px;
+                font-size: 12px;
+                color: #666;
+                text-align: center;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>PDF Belgesi</h1>
+              <p>Kaynak: ${source} • Tarih: ${new Date().toLocaleDateString('tr-TR')}</p>
+            </div>
+            <div class="image-container">
+              <img src="data:image/jpeg;base64,${base64}" alt="Belgeden çevrilen resim" />
+            </div>
+            <div class="footer">
+              <p>PDF Pocket ile oluşturuldu</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // PDF oluştur
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false,
+        format: Print.Format.A4,
+        orientation: Print.Orientation.portrait,
+      });
+
+      console.log('PDF oluşturuldu:', uri);
+
+      // PDF'i backend'e gönder
+      await uploadGeneratedPDF(uri, `${source}_${Date.now()}.pdf`);
+
+    } catch (error) {
+      console.error('PDF çevirme hatası:', error);
+      Alert.alert('Hata', 'PDF çevirme sırasında hata oluştu');
+    }
+  };
+
+  const uploadGeneratedPDF = async (pdfUri: string, fileName: string) => {
+    try {
+      // PDF'i base64'e çevir
+      const base64 = await FileSystem.readAsStringAsync(pdfUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Backend'e gönder
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: fileName,
+          fileData: base64,
+          type: 'local'
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        Alert.alert('Başarılı', `PDF başarıyla oluşturuldu: ${fileName}`, [
+          {
+            text: 'Görüntüle',
+            onPress: () => router.push(`/${result.pdf.id}`)
+          },
+          { text: 'Tamam' }
+        ]);
+        
+        // PDF listesini yenile
+        loadPDFs();
+      } else {
+        throw new Error('PDF upload edilemedi');
+      }
+    } catch (error) {
+      console.error('PDF upload hatası:', error);
+      Alert.alert('Hata', 'PDF kaydedilemedi');
+    }
+  };
 
 interface PDFFile {
   id: string;
