@@ -246,7 +246,7 @@ async def add_pdf_from_url(url_data: dict):
 async def view_pdf(pdf_id: str):
     """PDF'i tarayıcıda görüntüleme için döndür"""
     try:
-        pdf = await db.pdfs.find_one({"id": pdf_id})
+        pdf = await pdfs_collection.find_one({"id": pdf_id})
         if not pdf:
             raise HTTPException(status_code=404, detail="PDF bulunamadı")
         
