@@ -114,7 +114,7 @@ async def toggle_favorite(pdf_id: str):
     """PDF'in favori durumunu değiştir"""
     try:
         # Önce mevcut PDF'i bul
-        existing_pdf = await db.pdfs.find_one({"id": pdf_id})
+        existing_pdf = await pdfs_collection.find_one({"id": pdf_id})
         if not existing_pdf:
             raise HTTPException(status_code=404, detail="PDF bulunamadı")
         
@@ -122,13 +122,13 @@ async def toggle_favorite(pdf_id: str):
         new_favorite_status = not existing_pdf.get("isFavorite", False)
         
         # Güncelle
-        await db.pdfs.update_one(
+        await pdfs_collection.update_one(
             {"id": pdf_id},
             {"$set": {"isFavorite": new_favorite_status}}
         )
         
         # Güncellenmiş PDF'i getir
-        updated_pdf = await db.pdfs.find_one({"id": pdf_id})
+        updated_pdf = await pdfs_collection.find_one({"id": pdf_id})
         return PDFFile(**updated_pdf)
     except HTTPException:
         raise
