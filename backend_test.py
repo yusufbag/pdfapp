@@ -763,9 +763,15 @@ class PDFBackendTester:
             self.test_add_pdf_from_url,
             self.test_upload_pdf_file,
             self.test_get_stats,
+            # PDF Annotation Tests - NEW
+            self.test_get_pdf_annotations,
+            self.test_add_pdf_annotation,
+            self.test_update_pdf_annotation,
+            self.test_delete_pdf_annotation,
             self.test_delete_pdf,
             self.test_error_scenarios,
-            self.test_pdf_view_error_scenarios  # Test PDF view error cases
+            self.test_pdf_view_error_scenarios,  # Test PDF view error cases
+            self.test_annotation_error_scenarios  # Test annotation error cases
         ]
         
         passed = 0
