@@ -708,33 +708,6 @@ export default function PDFViewer() {
     return date.toLocaleDateString('tr-TR');
   };
 
-  // Loading state için early return
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#E53E3E" />
-          <Text style={styles.loadingText}>PDF Yükleniyor...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Error state için early return
-  if (!pdf) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Ionicons name="document-outline" size={64} color="#ccc" />
-          <Text style={styles.errorText}>PDF bulunamadı</Text>
-          <TouchableOpacity style={styles.backButton} onPress={goBack}>
-            <Text style={styles.backButtonText}>Geri Dön</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   // Main component return
   return (
     <SafeAreaView style={styles.container}>
