@@ -401,11 +401,9 @@ export default function PDFViewer() {
           </div>
         </div>
         
-        <script type="module">
-          // PDF.js Configuration
-          import { getDocument, GlobalWorkerOptions } from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
-          
-          GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+        <script type="text/javascript">
+          // PDF.js Configuration - UMD Build için
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
           
           let pdfDoc = null;
           let currentPage = 1;
@@ -421,13 +419,13 @@ export default function PDFViewer() {
             isLoading = true;
             
             try {
-              console.log('PDF.js yükleme başladı:', '${pdfSrc}');
+              console.log('PDF.js yükleme başladı:', '${escapedPdfSrc}');
               
               // Loading göster
               showLoading();
               
-              // PDF dosyasını yükle
-              const loadingTask = getDocument('${pdfSrc}');
+              // PDF dosyasını yükle - UMD syntax kullan
+              const loadingTask = pdfjsLib.getDocument('${escapedPdfSrc}');
               pdfDoc = await loadingTask.promise;
               totalPages = pdfDoc.numPages;
               
@@ -458,7 +456,7 @@ export default function PDFViewer() {
                 window.ReactNativeWebView.postMessage(JSON.stringify({
                   type: 'pdfError',
                   success: false,
-                  error: error.message
+                  error: error.message || 'PDF yüklenemedi'
                 }));
               }
             } finally {
