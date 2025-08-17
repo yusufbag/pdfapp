@@ -127,7 +127,7 @@ export default function Index() {
   };
 
   const openPDF = (pdf: PDFFile) => {
-    router.push(`/pdf-viewer?pdfId=${pdf.id}`);
+    router.push(`/${pdf.id}`);
   };
 
   const deletePDF = async (pdfId: string) => {
