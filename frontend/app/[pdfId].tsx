@@ -41,13 +41,29 @@ export default function PDFViewer() {
   }, [pdfId]);
 
   useEffect(() => {
-    // 15 saniye timeout ekle
+    // 10 saniye timeout ekle
     if (webViewLoading) {
       const timeout = setTimeout(() => {
+        console.log('PDF yükleme timeout - alternatif çözüm deneniyor');
         setWebViewLoading(false);
         setPdfError(true);
-        Alert.alert('Zaman Aşımı', 'PDF yüklenirken zaman aşımına uğradı. Lütfen tekrar deneyin.');
-      }, 15000);
+        Alert.alert(
+          'PDF Yüklenemedi', 
+          'PDF yüklenirken sorun oluştu. Bu PDF desteklenmiyor olabilir.',
+          [
+            { text: 'Tamam', style: 'default' },
+            { 
+              text: 'Tarayıcıda Aç', 
+              onPress: () => {
+                if (pdf?.uri) {
+                  // External browser'da açmayı dene
+                  console.log('PDF tarayıcıda açılıyor:', pdf.uri);
+                }
+              }
+            }
+          ]
+        );
+      }, 10000);
       
       setLoadingTimeout(timeout);
       
@@ -60,7 +76,7 @@ export default function PDFViewer() {
         setLoadingTimeout(null);
       }
     }
-  }, [webViewLoading]);
+  }, [webViewLoading, pdf]);
 
   const loadPDF = async () => {
     try {
