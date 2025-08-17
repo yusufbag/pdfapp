@@ -168,28 +168,38 @@ export default function Index() {
 
   // Kamera/Galeri PDF Çevirme Fonksiyonları
   const requestCameraPermission = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Hata', 'Kamera erişimi gerekiyor!');
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Hata', 'Kamera erişimi gerekiyor!');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      Alert.alert('Hata', 'Bu özellik web preview\'da çalışmaz. Mobil uygulamada deneyin.');
       return false;
     }
-    return true;
   };
 
   const requestMediaLibraryPermission = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Hata', 'Galeri erişimi gerekiyor!');
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Hata', 'Galeri erişimi gerekiyor!');
+        return false;
+      }
+      return true;
+    } catch (error) {
+      Alert.alert('Hata', 'Bu özellik web preview\'da çalışmaz. Mobil uygulamada deneyin.');
       return false;
     }
-    return true;
   };
 
   const takePhotoAndConvertToPDF = async () => {
-    const hasPermission = await requestCameraPermission();
-    if (!hasPermission) return;
-
     try {
+      const hasPermission = await requestCameraPermission();
+      if (!hasPermission) return;
+
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -202,15 +212,15 @@ export default function Index() {
       }
     } catch (error) {
       console.error('Kamera hatası:', error);
-      Alert.alert('Hata', 'Fotoğraf çekme sırasında hata oluştu');
+      Alert.alert('Web Preview', 'Kamera özelliği sadece mobil uygulamada çalışır.');
     }
   };
 
   const pickImageFromGallery = async () => {
-    const hasPermission = await requestMediaLibraryPermission();
-    if (!hasPermission) return;
-
     try {
+      const hasPermission = await requestMediaLibraryPermission();
+      if (!hasPermission) return;
+
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -224,7 +234,7 @@ export default function Index() {
       }
     } catch (error) {
       console.error('Galeri hatası:', error);
-      Alert.alert('Hata', 'Resim seçme sırasında hata oluştu');
+      Alert.alert('Web Preview', 'Galeri özelliği sadece mobil uygulamada çalışır.');
     }
   };
 
