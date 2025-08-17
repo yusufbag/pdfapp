@@ -216,10 +216,54 @@ export default function Index() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>PDF Görüntüleyici</Text>
-        <TouchableOpacity style={styles.addButton} onPress={pickDocument}>
+        <TouchableOpacity style={styles.addButton} onPress={() => setShowAddMenu(!showAddMenu)}>
           <Ionicons name="add" size={24} color="white" />
         </TouchableOpacity>
       </View>
+
+      {/* Add Menu Dropdown */}
+      {showAddMenu && (
+        <View style={styles.addMenuOverlay}>
+          <TouchableOpacity 
+            style={styles.addMenuBackdrop} 
+            onPress={() => setShowAddMenu(false)}
+          />
+          <View style={styles.addMenu}>
+            <TouchableOpacity 
+              style={styles.addMenuItem} 
+              onPress={() => {
+                setShowAddMenu(false);
+                pickDocument();
+              }}
+            >
+              <Ionicons name="document" size={20} color="#E53E3E" />
+              <Text style={styles.addMenuText}>Cihazdan PDF Seç</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.addMenuItem} 
+              onPress={() => {
+                setShowAddMenu(false);
+                router.push('/add-url');
+              }}
+            >
+              <Ionicons name="link" size={20} color="#E53E3E" />
+              <Text style={styles.addMenuText}>URL'den PDF Ekle</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.addMenuItem, styles.disabledMenuItem]} 
+              onPress={() => {
+                setShowAddMenu(false);
+                Alert.alert('Yakında', 'Cloud servisleri entegrasyonu yakında gelecek!');
+              }}
+            >
+              <Ionicons name="cloud" size={20} color="#999" />
+              <Text style={[styles.addMenuText, styles.disabledText]}>Cloud'dan PDF (Yakında)</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Tab Seçici */}
       <View style={styles.tabContainer}>
