@@ -402,8 +402,8 @@ export default function PDFViewer() {
         </div>
         
         <script type="text/javascript">
-          // PDF.js Configuration - UMD Build için
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
+          // PDF.js Configuration - Stable Sürüm 3.11.174
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
           
           let pdfDoc = null;
           let currentPage = 1;
