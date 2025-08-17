@@ -596,7 +596,7 @@ export default function PDFViewer() {
             
             <TouchableOpacity 
               style={styles.toolButton}
-              onPress={() => {/* Add note */}}
+              onPress={showAddNoteDialog}
             >
               <Text style={styles.toolButtonText}>📝 Not Ekle</Text>
             </TouchableOpacity>
