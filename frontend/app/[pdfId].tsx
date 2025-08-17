@@ -811,12 +811,12 @@ export default function PDFViewer() {
             </TouchableOpacity>
           )}
           
-          {highlightMode && (
+          {drawingMode && (
             <TouchableOpacity 
               style={styles.testButton}
-              onPress={simulateHighlight}
+              onPress={simulateDrawing}
             >
-              <Text style={styles.testButtonText}>🧪 Test İşaretleme</Text>
+              <Text style={styles.testButtonText}>✏️ Test Çizim</Text>
             </TouchableOpacity>
           )}
           
