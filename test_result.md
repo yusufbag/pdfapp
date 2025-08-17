@@ -213,15 +213,18 @@ frontend:
 
   - task: "PDF Görüntüleyici"
     implemented: true
-    working: "NA"
+    working: true
     file: "app/[pdfId].tsx"
     stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "Dynamic route [pdfId].tsx olarak yeniden adlandırıldı. Router navigation /${pdfId} formatına güncellendi. Expo-router dynamic routing kurgusu yapıldı"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ PDF GÖRÜNTÜLEYICI TEST PASSED: Dynamic routing [pdfId] başarıyla çalışıyor! Ana sayfadan PDF'lere tıklama ile /${pdfId} formatında navigation gerçekleşiyor. PDF viewer sayfası WebView ile PDF yükleme, zoom kontrolleri, favori butonu ve geri tuşu tam işlevsel. Expo restart sonrası routing sorunu çözüldü."
         
   - task: "URL'den PDF Ekleme Sayfası"
     implemented: true
