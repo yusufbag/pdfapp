@@ -33,51 +33,10 @@ export default function PDFViewer() {
   const { pdfId } = useLocalSearchParams();
   const [pdf, setPdf] = useState<PDFFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [webViewLoading, setWebViewLoading] = useState(true);
-  const [pdfError, setPdfError] = useState(false);
-  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadPDF();
   }, [pdfId]);
-
-  useEffect(() => {
-    // 10 saniye timeout ekle
-    if (webViewLoading) {
-      const timeout = setTimeout(() => {
-        console.log('PDF yükleme timeout - alternatif çözüm deneniyor');
-        setWebViewLoading(false);
-        setPdfError(true);
-        Alert.alert(
-          'PDF Yüklenemedi', 
-          'PDF yüklenirken sorun oluştu. Bu PDF desteklenmiyor olabilir.',
-          [
-            { text: 'Tamam', style: 'default' },
-            { 
-              text: 'Tarayıcıda Aç', 
-              onPress: () => {
-                if (pdf?.uri) {
-                  // External browser'da açmayı dene
-                  console.log('PDF tarayıcıda açılıyor:', pdf.uri);
-                }
-              }
-            }
-          ]
-        );
-      }, 10000);
-      
-      setLoadingTimeout(timeout);
-      
-      return () => {
-        if (timeout) clearTimeout(timeout);
-      };
-    } else {
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-        setLoadingTimeout(null);
-      }
-    }
-  }, [webViewLoading, pdf]);
 
   const loadPDF = async () => {
     try {
