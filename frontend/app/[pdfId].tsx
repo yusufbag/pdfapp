@@ -555,7 +555,30 @@ export default function PDFViewer() {
           <View style={styles.webViewLoading}>
             <ActivityIndicator size="large" color="#E53E3E" />
             <Text style={styles.loadingText}>PDF Hazırlanıyor...</Text>
-            <Text style={styles.loadingSubtext}>Bu biraz zaman alabilir</Text>
+            <Text style={styles.loadingSubtext}>PDF.js ile yükleniyor...</Text>
+            
+            {/* 8 saniye sonra alternatif çözüm öner */}
+            <TouchableOpacity 
+              style={[styles.skipButton, { marginTop: 20 }]} 
+              onPress={() => {
+                setPdfError(false);
+                setWebViewLoading(false);
+                Alert.alert(
+                  'PDF Görüntüleme', 
+                  `${pdf?.name || 'Bu PDF'} tarayıcıda açılacak.`, 
+                  [
+                    { text: 'İptal', style: 'cancel' },
+                    { text: 'Tarayıcıda Aç', onPress: () => {
+                      // React Native'de WebBrowser kullanmak gerekir
+                      // Şimdilik alert gösterelim
+                      console.log('PDF tarayıcıda açılacak:', pdf?.uri);
+                    }}
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.skipText}>Yükleme Uzun Sürüyor? Tarayıcıda Aç</Text>
+            </TouchableOpacity>
           </View>
         )}
         
