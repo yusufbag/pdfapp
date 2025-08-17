@@ -313,6 +313,168 @@ class PDFBackendTester:
             self.log_test("Get Statistics", False, f"Exception: {str(e)}")
             return False
 
+    def test_pdf_view_endpoint(self):
+        """Test GET /api/pdfs/{id}/view - PDF viewing endpoint (CRITICAL FOR PDF.js)"""
+        if not self.test_pdf_id:
+            self.log_test("PDF View Endpoint", False, "No test PDF ID available")
+            return False
+            
+        try:
+            response = self.session.get(f"{self.base_url}/pdfs/{self.test_pdf_id}/view")
+            
+            if response.status_code == 200:
+                # Check if response is PDF content or redirect
+                content_type = response.headers.get('content-type', '').lower()
+                
+                if 'application/pdf' in content_type:
+                    # Direct PDF content returned
+                    content_length = len(response.content)
+                    self.log_test("PDF View Endpoint", True, f"PDF content returned directly, size: {content_length} bytes, Content-Type: {content_type}")
+                    return True
+                elif response.status_code == 302 or 'text/html' in content_type:
+                    # Redirect response for external URLs
+                    self.log_test("PDF View Endpoint", True, f"Redirect response for external URL, Content-Type: {content_type}")
+                    return True
+                else:
+                    self.log_test("PDF View Endpoint", False, f"Unexpected content type: {content_type}")
+                    return False
+            elif response.status_code == 404:
+                self.log_test("PDF View Endpoint", False, "PDF not found for viewing")
+                return False
+            else:
+                self.log_test("PDF View Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("PDF View Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_view_with_base64_data(self):
+        """Test PDF viewing with base64 data (uploaded PDF)"""
+        try:
+            # First create a PDF with base64 data
+            pdf_content = b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n174\n%%EOF"
+            
+            files = {
+                'file': ('test-view-document.pdf', pdf_content, 'application/pdf')
+            }
+            
+            # Upload PDF
+            upload_response = self.session.post(f"{self.base_url}/pdfs/upload", files=files)
+            
+            if upload_response.status_code != 200:
+                self.log_test("PDF View with Base64", False, "Failed to upload test PDF")
+                return False
+                
+            uploaded_pdf = upload_response.json()
+            pdf_id = uploaded_pdf["id"]
+            
+            # Now test viewing this PDF
+            view_response = self.session.get(f"{self.base_url}/pdfs/{pdf_id}/view")
+            
+            if view_response.status_code == 200:
+                content_type = view_response.headers.get('content-type', '').lower()
+                
+                if 'application/pdf' in content_type:
+                    # Verify the PDF content is returned correctly
+                    returned_content = view_response.content
+                    if len(returned_content) > 0 and returned_content.startswith(b'%PDF'):
+                        self.log_test("PDF View with Base64", True, f"Base64 PDF correctly decoded and returned, size: {len(returned_content)} bytes")
+                        
+                        # Clean up - delete the test PDF
+                        self.session.delete(f"{self.base_url}/pdfs/{pdf_id}")
+                        return True
+                    else:
+                        self.log_test("PDF View with Base64", False, "Invalid PDF content returned")
+                        return False
+                else:
+                    self.log_test("PDF View with Base64", False, f"Wrong content type: {content_type}")
+                    return False
+            else:
+                self.log_test("PDF View with Base64", False, f"HTTP {view_response.status_code}: {view_response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("PDF View with Base64", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_view_with_url(self):
+        """Test PDF viewing with external URL"""
+        try:
+            # Create a PDF from URL
+            url_data = {
+                "url": "https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf"
+            }
+            
+            create_response = self.session.post(
+                f"{self.base_url}/pdfs/from-url",
+                json=url_data,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if create_response.status_code != 200:
+                self.log_test("PDF View with URL", False, "Failed to create PDF from URL")
+                return False
+                
+            created_pdf = create_response.json()
+            pdf_id = created_pdf["id"]
+            
+            # Now test viewing this PDF
+            view_response = self.session.get(f"{self.base_url}/pdfs/{pdf_id}/view", allow_redirects=False)
+            
+            if view_response.status_code in [200, 302, 307, 308]:
+                if view_response.status_code == 302:
+                    # Should redirect to the original URL
+                    location = view_response.headers.get('location', '')
+                    if url_data["url"] in location:
+                        self.log_test("PDF View with URL", True, f"Correctly redirected to: {location}")
+                        
+                        # Clean up - delete the test PDF
+                        self.session.delete(f"{self.base_url}/pdfs/{pdf_id}")
+                        return True
+                    else:
+                        self.log_test("PDF View with URL", False, f"Wrong redirect location: {location}")
+                        return False
+                else:
+                    # Direct content returned
+                    self.log_test("PDF View with URL", True, f"PDF content returned directly, status: {view_response.status_code}")
+                    
+                    # Clean up - delete the test PDF
+                    self.session.delete(f"{self.base_url}/pdfs/{pdf_id}")
+                    return True
+            else:
+                self.log_test("PDF View with URL", False, f"HTTP {view_response.status_code}: {view_response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("PDF View with URL", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_view_error_scenarios(self):
+        """Test PDF view endpoint error scenarios"""
+        print("=== Testing PDF View Error Scenarios ===")
+        
+        # Test invalid PDF ID for view
+        try:
+            response = self.session.get(f"{self.base_url}/pdfs/invalid-view-id-12345/view")
+            if response.status_code == 404:
+                self.log_test("PDF View Invalid ID", True, "Correctly returned 404 for invalid PDF ID")
+            else:
+                self.log_test("PDF View Invalid ID", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("PDF View Invalid ID", False, f"Exception: {str(e)}")
+
+        # Test view endpoint with non-existent UUID
+        try:
+            fake_uuid = str(uuid.uuid4())
+            response = self.session.get(f"{self.base_url}/pdfs/{fake_uuid}/view")
+            if response.status_code == 404:
+                self.log_test("PDF View Non-existent UUID", True, "Correctly returned 404 for non-existent UUID")
+            else:
+                self.log_test("PDF View Non-existent UUID", False, f"Expected 404, got {response.status_code}")
+        except Exception as e:
+            self.log_test("PDF View Non-existent UUID", False, f"Exception: {str(e)}")
+
     def test_delete_pdf(self):
         """Test DELETE /api/pdfs/{id} - Delete PDF"""
         if not self.test_pdf_id:
