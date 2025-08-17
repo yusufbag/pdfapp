@@ -464,102 +464,74 @@ export default function PDFViewer() {
         </View>
       </View>
 
-      {/* Content */}
-      {viewMode === 'options' ? (
-        <View style={styles.pdfContainer}>
-          <View style={styles.pdfOptionsContainer}>
-            <View style={styles.pdfIcon}>
-              <Ionicons name="document-text" size={80} color="#E53E3E" />
-            </View>
-            
-            <Text style={styles.pdfTitle}>{pdf.name}</Text>
-            <Text style={styles.pdfInfo}>
-              Boyut: {formatFileSize(pdf.size)} • {formatDate(pdf.dateAdded)}
-            </Text>
-            
-            <View style={styles.viewingOptions}>
-              <Text style={styles.optionsTitle}>PDF Görüntüleme</Text>
-              
-              <TouchableOpacity style={styles.optionButton} onPress={openInAppViewer}>
-                <View style={styles.optionIconContainer}>
-                  <Ionicons name="document-text" size={24} color="#E53E3E" />
-                </View>
-                <View style={styles.optionTextContainer}>
-                  <Text style={styles.optionTitle}>PDF'i Görüntüle</Text>
-                  <Text style={styles.optionDescription}>PDF'i uygulama içinde aç</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#999" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.optionButton} 
-                onPress={() => {
-                  Alert.alert(
-                    'PDF Paylaş', 
-                    'PDF paylaşım özelliği gelecek güncellemede eklenecek.',
-                    [{ text: 'Tamam' }]
-                  );
-                }}
-              >
-                <View style={styles.optionIconContainer}>
-                  <Ionicons name="share-outline" size={24} color="#E53E3E" />
-                </View>
-                <View style={styles.optionTextContainer}>
-                  <Text style={styles.optionTitle}>Paylaş / İndir</Text>
-                  <Text style={styles.optionDescription}>
-                    PDF'i paylaş veya cihaza indir (Yakında)
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#999" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.pdfViewerContainer}>
-          {webViewLoading && (
-            <View style={styles.webViewLoading}>
-              <ActivityIndicator size="large" color="#E53E3E" />
-              <Text style={styles.loadingText}>PDF Yükleniyor...</Text>
-              
-              <TouchableOpacity 
-                style={styles.backToOptionsButton} 
-                onPress={() => setViewMode('options')}
-              >
-                <Text style={styles.backToOptionsText}>← Seçeneklere Dön</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          
-          <WebView
-            style={styles.webView}
-            source={{ 
-              html: createSimplePDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
-            }}
-            onMessage={handleWebViewMessage}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            allowsInlineMediaPlayback={true}
-            mediaPlaybackRequiresUserAction={false}
-            scalesPageToFit={true}
-            startInLoadingState={false}
-            mixedContentMode="always"
-            allowsFullscreenVideo={false}
-            bounces={false}
-            scrollEnabled={true}
-          />
-          
-          {!webViewLoading && (
+      {/* Ana PDF Viewer */}
+      <View style={styles.pdfContainer}>
+        {/* Annotation Tools */}
+        {showAnnotationMode && (
+          <View style={styles.annotationToolbar}>
             <TouchableOpacity 
-              style={styles.floatingBackButton} 
-              onPress={() => setViewMode('options')}
+              style={styles.toolButton}
+              onPress={() => setShowAnnotationMode(false)}
             >
-              <Ionicons name="arrow-back" size={20} color="white" />
-              <Text style={styles.floatingBackText}>Seçenekler</Text>
+              <Text style={styles.toolButtonText}>✏️ Düzenleme Kapat</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.toolButton}
+              onPress={() => {/* Add note */}}
+            >
+              <Text style={styles.toolButtonText}>📝 Not Ekle</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.toolButton}
+              onPress={saveAnnotations}
+            >
+              <Text style={styles.toolButtonText}>💾 Kaydet</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* PDF Viewer Content */}
+        <View style={styles.viewerContainer}>
+          <Text style={styles.viewerTitle}>📄 PDF Görüntüleyici</Text>
+          
+          {!showAnnotationMode && (
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={() => setShowAnnotationMode(true)}
+            >
+              <Text style={styles.editButtonText}>✏️ PDF'i Düzenle</Text>
             </TouchableOpacity>
           )}
+          
+          <TouchableOpacity 
+            style={styles.viewButton} 
+            onPress={() => console.log('PDF uygulama içinde açılıyor:', pdf.name)}
+          >
+            <Text style={styles.viewButtonText}>📖 PDF'i Görüntüle</Text>
+          </TouchableOpacity>
         </View>
-      )}
+
+        {/* WebView for PDF Display */}
+        <WebView
+          style={styles.webView}
+          source={{ 
+            html: createSimplePDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
+          }}
+          onMessage={handleWebViewMessage}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          allowsInlineMediaPlayback={true}
+          mediaPlaybackRequiresUserAction={false}
+          scalesPageToFit={true}
+          startInLoadingState={false}
+          mixedContentMode="always"
+          allowsFullscreenVideo={false}
+          bounces={false}
+          scrollEnabled={true}
+        />
+      </View>
     </SafeAreaView>
   );
 }
