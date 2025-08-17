@@ -197,29 +197,6 @@ export default function PDFViewer() {
     );
   }
 
-  // Main component return
-  return (
-
-  const loadPDF = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}`);
-      if (response.ok) {
-        const pdfData = await response.json();
-        setPdf(pdfData);
-      } else {
-        Alert.alert('Hata', 'PDF bulunamadı.');
-        router.back();
-      }
-    } catch (error) {
-      console.log('PDF yüklenirken hata:', error);
-      Alert.alert('Hata', 'PDF yüklenirken bir hata oluştu.');
-      router.back();
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const toggleFavorite = async () => {
     if (!pdf) return;
     
@@ -237,18 +214,8 @@ export default function PDFViewer() {
     }
   };
 
-  // Annotation işlemleri
-  const loadAnnotations = async () => {
-    try {
-      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}/annotations`);
-      if (response.ok) {
-        const data = await response.json();
-        setAnnotations(data.annotations || []);
-      }
-    } catch (error) {
-      console.error('Annotations yüklenirken hata:', error);
-    }
-  };
+  // Main component return
+  return (
 
   const addAnnotation = async (x: number, y: number, text: string, page: number = 1) => {
     try {
