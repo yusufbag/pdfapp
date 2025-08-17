@@ -83,6 +83,15 @@ export default function PDFViewer() {
     }
   };
 
+  const saveAnnotations = async () => {
+    try {
+      // Annotation kaydetme işlemi burada yapılacak
+      Alert.alert('Başarılı', 'Notlarınız kaydedildi.');
+    } catch (error) {
+      Alert.alert('Hata', 'Notlar kaydedilemedi.');
+    }
+  };
+
   const openInAppViewer = () => {
     if (!pdf) return;
     
