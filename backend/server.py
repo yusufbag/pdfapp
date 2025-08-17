@@ -372,7 +372,7 @@ async def add_pdf_annotation(pdf_id: str, annotation_data: dict):
             raise HTTPException(status_code=500, detail="Annotation eklenemedi")
             
     except Exception as e:
-        logger.error(f"Annotation ekleme hatası: {str(e)}")
+        logging.error(f"Annotation ekleme hatası: {str(e)}")
         raise HTTPException(status_code=500, detail="Annotation eklenemedi")
 
 @api_router.put("/pdfs/{pdf_id}/annotations/{annotation_id}")
