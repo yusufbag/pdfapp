@@ -521,7 +521,7 @@ export default function PDFViewer() {
             onMessage={handleWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
-            allowsInlineMediaPlaybook={true}
+            allowsInlineMediaPlayback={true}
             mediaPlaybackRequiresUserAction={false}
             scalesPageToFit={true}
             startInLoadingState={false}
