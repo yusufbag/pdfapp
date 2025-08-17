@@ -680,6 +680,7 @@ export default function PDFViewer() {
     return date.toLocaleDateString('tr-TR');
   };
 
+  // Loading state için early return
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -691,6 +692,7 @@ export default function PDFViewer() {
     );
   }
 
+  // Error state için early return
   if (!pdf) {
     return (
       <SafeAreaView style={styles.container}>
@@ -705,6 +707,7 @@ export default function PDFViewer() {
     );
   }
 
+  // Main component return
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
