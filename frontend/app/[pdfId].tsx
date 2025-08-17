@@ -234,7 +234,67 @@ export default function PDFViewer() {
     }
   };
 
-  const simulateHighlight = () => {
+  const addDrawing = async (drawingData: string, x: number, y: number, width: number, height: number, page: number = 1) => {
+    try {
+      const drawingAnnotation = {
+        type: 'drawing',
+        x,
+        y,
+        width,
+        height,
+        page,
+        content: `${drawingTool} drawing`,
+        color: selectedDrawingColor,
+        stroke_width: strokeWidth,
+        drawing_data: drawingData,
+        tool: drawingTool
+      };
+
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}/annotations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(drawingAnnotation),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnnotations(prev => [...prev, result.annotation]);
+        Alert.alert('Başarılı', 'Çizim eklendi!');
+        return result.annotation;
+      } else {
+        throw new Error('Drawing eklenemedi');
+      }
+    } catch (error) {
+      console.error('Drawing ekleme hatası:', error);
+      Alert.alert('Hata', 'Çizim eklenemedi');
+      throw error;
+    }
+  };
+
+  const simulateDrawing = () => {
+    if (!drawingMode) {
+      Alert.alert('Uyarı', 'Önce çizim modunu açın');
+      return;
+    }
+
+    // Simulate a simple drawing path (circle)
+    const centerX = 200;
+    const centerY = 150;
+    const radius = 50;
+    
+    // Create SVG path for a circle
+    const svgPath = `M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 1 1 ${centerX + radius} ${centerY} A ${radius} ${radius} 0 1 1 ${centerX - radius} ${centerY}`;
+    
+    addDrawing(
+      svgPath, 
+      centerX - radius, 
+      centerY - radius, 
+      radius * 2, 
+      radius * 2
+    );
+  };
     if (!highlightMode) {
       Alert.alert('Uyarı', 'Önce işaretleme modunu açın');
       return;
