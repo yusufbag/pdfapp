@@ -364,7 +364,6 @@ export default function PDFViewer() {
     if (!pdf) return;
     
     console.log('PDF uygulama içinde açılıyor:', pdf.name);
-    setViewMode('viewer');
     setWebViewLoading(true);
   };
 
