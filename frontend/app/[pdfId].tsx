@@ -384,14 +384,14 @@ export default function PDFViewer() {
           }
           console.log('✅ PDF başarıyla yüklendi');
           break;
-        case 'pdfPartialLoad':
+        case 'pdfAlternative':
           setWebViewLoading(false);
           setPdfError(false);
           if (loadingTimeout) {
             clearTimeout(loadingTimeout);
             setLoadingTimeout(null);
           }
-          console.log('📄 PDF kısmi yüklendi (basit viewer)');
+          console.log('📄 PDF alternatif viewer ile hazır');
           break;
         case 'pdfError':
           setWebViewLoading(false);
@@ -401,7 +401,7 @@ export default function PDFViewer() {
             setLoadingTimeout(null);
           }
           console.log('❌ PDF yüklenemedi');
-          Alert.alert('PDF Hatası', 'PDF yüklenemedi. Dosya bozuk olabilir veya desteklenmiyor.');
+          Alert.alert('PDF Hatası', 'PDF yüklenemedi. Bu PDF tarayıcıda desteklenmiyor olabilir.');
           break;
       }
     } catch (error) {
