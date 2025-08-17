@@ -57,6 +57,34 @@ export default function PDFViewer() {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [drawingTool, setDrawingTool] = useState('pen'); // pen, highlighter, eraser
 
+  const EXPO_PUBLIC_BACKEND_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
+
+  // Loading state için early return
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#E53E3E" />
+          <Text style={styles.loadingText}>PDF Yükleniyor...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state için early return
+  if (!pdf) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>❌ PDF bulunamadı</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => router.back()}>
+            <Text style={styles.retryButtonText}>Geri Dön</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   useEffect(() => {
     loadPDF();
   }, [pdfId]);
