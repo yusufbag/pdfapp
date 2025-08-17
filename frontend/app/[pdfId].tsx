@@ -33,6 +33,8 @@ export default function PDFViewer() {
   const { pdfId } = useLocalSearchParams();
   const [pdf, setPdf] = useState<PDFFile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'options' | 'viewer'>('options');
+  const [webViewLoading, setWebViewLoading] = useState(true);
 
   useEffect(() => {
     loadPDF();
