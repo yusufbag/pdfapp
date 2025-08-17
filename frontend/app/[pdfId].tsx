@@ -106,6 +106,17 @@ export default function PDFViewer() {
         // Base64 PDF'i için özel endpoint kullan
         pdfUrl = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf.id}/view`;
         
+  const openPDFInBrowser = async () => {
+    if (!pdf) return;
+    
+    try {
+      let pdfUrl = pdf.uri;
+      
+      // Eğer base64 data varsa, önce bir web URL'ine dönüştürmeliyiz
+      if (pdf.fileData && pdfUrl.startsWith('data:')) {
+        // Base64 PDF'i için özel endpoint kullan
+        pdfUrl = `${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf.id}/view`;
+        
         Alert.alert(
           'PDF Tarayıcıda Açılıyor',
           `${pdf.name} varsayılan tarayıcınızda açılacak.`,
@@ -130,6 +141,294 @@ export default function PDFViewer() {
     } catch (error) {
       console.error('WebBrowser hatası:', error);
       Alert.alert('Hata', 'PDF tarayıcıda açılırken bir sorun oluştu.');
+    }
+  };
+
+  // Basit ve etkili PDF görüntüleyici HTML
+  const createSimplePDFViewerHTML = (pdfUri: string, fileData?: string) => {
+    let pdfSrc = pdfUri;
+    
+    // Eğer base64 data varsa onu kullan
+    if (fileData) {
+      pdfSrc = `data:application/pdf;base64,${fileData}`;
+    }
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <title>PDF Görüntüleyici</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+          }
+          
+          .pdf-header {
+            background: linear-gradient(135deg, #E53E3E 0%, #C53030 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+          }
+          
+          .pdf-title {
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+            margin-right: 16px;
+          }
+          
+          .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(245, 245, 245, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+          }
+          
+          .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #E5E5E5;
+            border-top: 4px solid #E53E3E;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          .loading-text {
+            font-size: 18px;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+          }
+          
+          .loading-subtext {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+          }
+          
+          .pdf-container {
+            flex: 1;
+            position: relative;
+            background: white;
+          }
+          
+          .pdf-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+          }
+          
+          .error-container {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+          }
+          
+          .error-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+          }
+          
+          .error-title {
+            font-size: 20px;
+            color: #E53E3E;
+            font-weight: bold;
+            margin-bottom: 12px;
+          }
+          
+          .error-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 20px;
+            margin-bottom: 24px;
+          }
+          
+          .retry-button {
+            background: #E53E3E;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+          }
+          
+          .retry-button:hover {
+            background: #C53030;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="pdf-header">
+          <div class="pdf-title">📄 PDF Görüntüleyici</div>
+          <div id="status" style="font-size: 12px; opacity: 0.9;">Yükleniyor...</div>
+        </div>
+        
+        <div class="pdf-container">
+          <div id="loading-overlay" class="loading-overlay">
+            <div class="spinner"></div>
+            <div class="loading-text">PDF hazırlanıyor...</div>
+            <div class="loading-subtext">Lütfen bekleyin, bu birkaç saniye sürebilir</div>
+          </div>
+          
+          <iframe 
+            id="pdf-iframe"
+            class="pdf-iframe"
+            src="${pdfSrc}"
+            onload="onPDFLoad()"
+            onerror="onPDFError()"
+            title="PDF Viewer"
+          ></iframe>
+          
+          <div id="error-container" class="error-container">
+            <div class="error-icon">❌</div>
+            <div class="error-title">PDF Yüklenemedi</div>
+            <div class="error-text">
+              Bu PDF tarayıcıda görüntülenemiyor olabilir.<br>
+              Dosya bozuk veya desteklenmiyor olabilir.
+            </div>
+            <button class="retry-button" onclick="retryLoad()">Tekrar Dene</button>
+          </div>
+        </div>
+        
+        <script>
+          let loadTimeout = null;
+          let pdfLoaded = false;
+          
+          function onPDFLoad() {
+            clearTimeout(loadTimeout);
+            pdfLoaded = true;
+            
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('status').textContent = '✅ PDF Yüklendi';
+            
+            // React Native'e bildir
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'pdfLoaded',
+                success: true
+              }));
+            }
+          }
+          
+          function onPDFError() {
+            clearTimeout(loadTimeout);
+            
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('pdf-iframe').style.display = 'none';
+            document.getElementById('error-container').style.display = 'flex';
+            document.getElementById('status').textContent = '❌ Yükleme Hatası';
+            
+            // React Native'e bildir
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'pdfError',
+                success: false
+              }));
+            }
+          }
+          
+          function retryLoad() {
+            pdfLoaded = false;
+            
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('pdf-iframe').style.display = 'block';
+            document.getElementById('status').textContent = '🔄 Yeniden Yükleniyor...';
+            
+            // iframe'i yeniden yükle
+            const iframe = document.getElementById('pdf-iframe');
+            iframe.src = iframe.src + '?_retry=' + Date.now();
+            
+            startLoadTimeout();
+          }
+          
+          function startLoadTimeout() {
+            clearTimeout(loadTimeout);
+            
+            // 15 saniye timeout
+            loadTimeout = setTimeout(() => {
+              if (!pdfLoaded) {
+                console.log('PDF yükleme timeout');
+                onPDFError();
+              }
+            }, 15000);
+          }
+          
+          // Sayfa yüklendiğinde timeout başlat
+          window.onload = function() {
+            console.log('PDF viewer HTML yüklendi');
+            startLoadTimeout();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+  };
+
+  const handleWebViewMessage = (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      
+      switch (data.type) {
+        case 'pdfLoaded':
+          setWebViewLoading(false);
+          console.log('✅ PDF başarıyla yüklendi (uygulama içi)');
+          break;
+        case 'pdfError':
+          setWebViewLoading(false);
+          console.log('❌ PDF yüklenemedi (uygulama içi)');
+          Alert.alert(
+            'PDF Yükleme Hatası', 
+            'Bu PDF uygulama içinde görüntülenemiyor. Tarayıcıda açmayı deneyin.',
+            [
+              { text: 'Tamam' },
+              { text: 'Tarayıcıda Aç', onPress: openPDFInBrowser }
+            ]
+          );
+          break;
+      }
+    } catch (error) {
+      console.log('WebView mesaj işleme hatası:', error);
+      setWebViewLoading(false);
     }
   };
 
