@@ -543,12 +543,15 @@ class PDFBackendTester:
         print(f"Testing backend at: {self.base_url}")
         print()
         
-        # Test sequence
+        # Test sequence - PDF viewing tests are prioritized
         tests = [
             self.test_health_check,
             self.test_get_all_pdfs,
             self.test_create_pdf,
             self.test_get_specific_pdf,
+            self.test_pdf_view_endpoint,  # CRITICAL: Test PDF viewing
+            self.test_pdf_view_with_base64_data,  # CRITICAL: Test base64 PDF viewing
+            self.test_pdf_view_with_url,  # CRITICAL: Test URL PDF viewing
             self.test_update_pdf,
             self.test_toggle_favorite,
             self.test_get_favorites,
@@ -556,7 +559,8 @@ class PDFBackendTester:
             self.test_upload_pdf_file,
             self.test_get_stats,
             self.test_delete_pdf,
-            self.test_error_scenarios
+            self.test_error_scenarios,
+            self.test_pdf_view_error_scenarios  # Test PDF view error cases
         ]
         
         passed = 0
