@@ -174,6 +174,173 @@ export default function PDFViewer() {
     }
   };
 
+  // PDF.js WebView HTML oluşturma fonksiyonu
+  const createSimplePDFViewerHTML = (pdfUri: string, fileData?: string) => {
+    const pdfSource = fileData ? `data:application/pdf;base64,${fileData}` : pdfUri;
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+          <title>PDF Viewer</title>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              background: #333;
+              font-family: Arial, sans-serif;
+              overflow-x: hidden;
+            }
+            #pdfContainer {
+              width: 100%;
+              text-align: center;
+              padding: 10px;
+            }
+            .page {
+              margin: 10px auto;
+              border: 1px solid #ccc;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+              background: white;
+            }
+            #loading {
+              color: white;
+              text-align: center;
+              padding: 50px;
+              font-size: 18px;
+            }
+            #error {
+              color: #ff6b6b;
+              text-align: center;
+              padding: 50px;
+              font-size: 16px;
+            }
+            .controls {
+              position: fixed;
+              bottom: 20px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: rgba(0,0,0,0.8);
+              padding: 10px 20px;
+              border-radius: 25px;
+              color: white;
+              font-size: 14px;
+              z-index: 1000;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="loading">📄 PDF Yükleniyor...</div>
+          <div id="error" style="display: none;"></div>
+          <div id="pdfContainer"></div>
+          <div class="controls" id="controls" style="display: none;">
+            <span id="pageInfo">Sayfa 1 / 1</span>
+          </div>
+          
+          <script>
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            
+            let pdfDoc = null;
+            let currentPage = 1;
+            let totalPages = 0;
+            
+            async function loadPDF() {
+              try {
+                const loadingDiv = document.getElementById('loading');
+                const errorDiv = document.getElementById('error');
+                const container = document.getElementById('pdfContainer');
+                const controls = document.getElementById('controls');
+                
+                loadingDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                
+                console.log('PDF yükleniyor:', '${pdfSource}');
+                
+                const pdf = await pdfjsLib.getDocument('${pdfSource}').promise;
+                pdfDoc = pdf;
+                totalPages = pdf.numPages;
+                
+                loadingDiv.style.display = 'none';
+                controls.style.display = 'block';
+                
+                // İlk sayfayı render et
+                await renderPage(1);
+                
+                // Diğer sayfaları da render et (küçük PDF'ler için)
+                if (totalPages <= 5) {
+                  for (let i = 2; i <= totalPages; i++) {
+                    await renderPage(i);
+                  }
+                }
+                
+                updatePageInfo();
+                
+              } catch (error) {
+                console.error('PDF yükleme hatası:', error);
+                document.getElementById('loading').style.display = 'none';
+                const errorDiv = document.getElementById('error');
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = '❌ PDF yüklenemedi: ' + error.message;
+              }
+            }
+            
+            async function renderPage(pageNum) {
+              try {
+                const page = await pdfDoc.getPage(pageNum);
+                const scale = Math.min(window.innerWidth / page.getViewport({scale: 1}).width * 0.9, 2);
+                const viewport = page.getViewport({scale: scale});
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                canvas.className = 'page';
+                canvas.id = 'page-' + pageNum;
+                
+                document.getElementById('pdfContainer').appendChild(canvas);
+                
+                const renderContext = {
+                  canvasContext: context,
+                  viewport: viewport
+                };
+                
+                await page.render(renderContext).promise;
+                console.log('Sayfa', pageNum, 'render edildi');
+                
+              } catch (error) {
+                console.error('Sayfa render hatası:', error);
+              }
+            }
+            
+            function updatePageInfo() {
+              document.getElementById('pageInfo').textContent = 'Toplam ' + totalPages + ' sayfa';
+            }
+            
+            // PDF'i yükle
+            loadPDF();
+          </script>
+        </body>
+      </html>
+    `;
+  };
+
+  // WebView mesaj handler
+  const handleWebViewMessage = (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      console.log('WebView mesajı:', data);
+    } catch (error) {
+      console.log('WebView mesaj hatası:', error);
+    }
+  };
+
+  // Test çizim fonksiyonu
+  const simulateDrawing = () => {
+    Alert.alert('Test Çizim', 'Çizim modu aktif! Gerçek uygulamada PDF üzerine çizim yapabilirsiniz.');
+  };
+
   // Loading state için early return
   if (loading) {
     return (
