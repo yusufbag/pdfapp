@@ -246,13 +246,12 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Expo Router Konfigürasyonu"
     - "PDF Görüntüleyici"
     - "URL'den PDF Ekleme Sayfası"
-  stuck_tasks:
-    - "PDF Görüntüleyici"
-    - "URL'den PDF Ekleme Sayfası"
-  test_all: false
-  test_priority: "high_first"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "critical_first"
 
 agent_communication:
     - agent: "main"
