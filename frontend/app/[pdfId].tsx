@@ -188,7 +188,75 @@ export default function PDFViewer() {
     }
   };
 
-  const showAddNoteDialog = () => {
+  const addHighlight = async (x: number, y: number, width: number, height: number, textContent: string, page: number = 1) => {
+    try {
+      const highlightData = {
+        type: 'highlight',
+        x,
+        y,
+        width,
+        height,
+        page,
+        content: textContent,
+        text_content: textContent,
+        color: selectedHighlightColor,
+        start_offset: 0,
+        end_offset: textContent.length
+      };
+
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}/annotations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(highlightData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnnotations(prev => [...prev, result.annotation]);
+        Alert.alert('Başarılı', 'İşaretleme eklendi!');
+        return result.annotation;
+      } else {
+        throw new Error('Highlight eklenemedi');
+      }
+    } catch (error) {
+      console.error('Highlight ekleme hatası:', error);
+      Alert.alert('Hata', 'İşaretleme eklenemedi');
+      throw error;
+    }
+  };
+
+  const simulateHighlight = () => {
+    if (!highlightMode) {
+      Alert.alert('Uyarı', 'Önce işaretleme modunu açın');
+      return;
+    }
+
+    Alert.prompt(
+      'Test İşaretleme',
+      'İşaretlemek istediğiniz metni yazın:',
+      [
+        {
+          text: 'İptal',
+          style: 'cancel',
+        },
+        {
+          text: 'İşaretle',
+          onPress: (text) => {
+            if (text && text.trim()) {
+              // Simulate highlight coordinates
+              const randomX = Math.floor(Math.random() * 400) + 50;
+              const randomY = Math.floor(Math.random() * 200) + 100;
+              const textWidth = text.length * 8; // Approximate width
+              addHighlight(randomX, randomY, textWidth, 20, text.trim());
+            }
+          },
+        },
+      ],
+      'plain-text'
+    );
+  };
     Alert.prompt(
       'Yeni Not',
       'PDF üzerine eklemek istediğiniz notu yazın:',
