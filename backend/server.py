@@ -238,6 +238,40 @@ async def add_pdf_from_url(url_data: dict):
         raise HTTPException(status_code=500, detail="URL'den PDF eklenemedi")
 
 # Stats endpoint
+@api_router.get("/pdfs/{pdf_id}/view")
+async def view_pdf(pdf_id: str):
+    """PDF'i tarayıcıda görüntüleme için döndür"""
+    try:
+        pdf = await db.pdfs.find_one({"id": pdf_id})
+        if not pdf:
+            raise HTTPException(status_code=404, detail="PDF bulunamadı")
+        
+        # Eğer base64 data varsa onu döndür
+        if pdf.get("fileData"):
+            # Base64 veriyi PDF olarak döndür
+            import base64
+            from fastapi.responses import Response
+            
+            pdf_bytes = base64.b64decode(pdf["fileData"])
+            return Response(
+                content=pdf_bytes,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"inline; filename=\"{pdf.get('name', 'document')}.pdf\"",
+                    "Content-Length": str(len(pdf_bytes))
+                }
+            )
+        else:
+            # External URL ise redirect et
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(url=pdf["uri"])
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"PDF görüntülenirken hata: {e}")
+        raise HTTPException(status_code=500, detail="PDF görüntülenemedi")
+
 @api_router.get("/stats")
 async def get_stats():
     """PDF istatistikleri getir"""
