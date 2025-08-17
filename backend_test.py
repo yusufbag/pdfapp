@@ -12,7 +12,7 @@ from datetime import datetime
 import uuid
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://pdfhub-mobile.preview.emergentagent.com/api"
+BACKEND_URL = "https://pdfpocket.preview.emergentagent.com/api"
 
 class PDFBackendTester:
     def __init__(self):

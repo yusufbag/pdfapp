@@ -1,0 +1,80 @@
+<analysis>
+The previous AI engineer successfully initiated and developed a mobile PDF viewer application using Expo, React Native, FastAPI, and MongoDB. The development followed a phased approach, starting with core functionalities like PDF listing, favoriting, and adding PDFs via URL. A significant portion of the trajectory focused on resolving persistent issues with the in-app PDF viewer, which repeatedly got stuck on a PDF Hazırlanıyor (PDF is preparing) message.
+
+The engineer iteratively attempted multiple solutions for the PDF viewer, including various WebView implementations (raw iframe, Google Drive viewer, direct base64, PDF.js via WebView) and even external browser viewing, often encountering syntax errors or caching problems. Each attempt involved extensive modifications to  and . The engineer demonstrated resilience in debugging, eventually resolving a critical syntax error by recreating the problematic file. The work concluded with the user reporting that the PDF still gets stuck on loading, prompting the engineer to begin implementing a robust canvas-based PDF.js solution for in-app viewing.
+</analysis>
+
+<product_requirements>
+The user requested a mobile PDF viewer application that is high-quality, stable, and capable of displaying PDFs. Key features include:
+1.  **PDF Viewing**: A core functionality to open and display PDF documents.
+2.  **Shortcuts/Favorites**: Ability to save viewed PDFs as shortcuts within the application for quick access.
+3.  **Editing Capabilities**: Users should be able to modify PDFs (e.g., annotate, highlight).
+4.  **Monetization**: Integrate Google AdMob for revenue generation (banner and interstitial ads).
+5.  **Deployment**: The application must be deployable to Google Play Store and Apple App Store.
+
+So far, the application has established a functional backend with CRUD operations for PDFs and a favorites system. The frontend includes a PDF list, a favorites tab, and the ability to add PDFs via device selection or URL. The most complex and ongoing requirement is the robust in-app PDF viewing, which has undergone multiple iterations to fix persistent loading issues.
+</product_requirements>
+
+<key_technical_concepts>
+-   **Expo & React Native**: Mobile application development framework.
+-   **Expo Router**: File-based navigation for screens (, , , ).
+-   **FastAPI**: Python-based backend API framework.
+-   **MongoDB**: Database for storing PDF metadata and content.
+-   ****: Used for rendering web content, extensively for PDF viewing.
+-   ****: Used for opening URLs in an external browser.
+-   **PDF.js**: JavaScript library for rendering PDFs, attempted within WebView.
+-   **Base64 Encoding**: Critical for image/PDF storage and rendering on the frontend.
+</key_technical_concepts>
+
+<code_architecture>
+The application uses a full-stack architecture with an Expo frontend, a FastAPI backend, and a MongoDB database.
+
+**Directory Structure:**
+
+
+-   ****:
+    -   **Summary**: This file contains the FastAPI backend logic, handling API endpoints for PDF management (CRUD operations), favorites, file uploads, and a PDF view endpoint. It interacts with MongoDB for data persistence.
+    -   **Changes**: Initially set up for basic PDF storage and retrieval. Later, a  endpoint was added to serve PDF data.
+
+-   ****:
+    -   **Summary**: The main entry point and home screen of the Expo application. It displays a list of PDFs, manages favorites, and provides navigation to add new PDFs or view existing ones.
+    -   **Changes**: Initially a minimal setup. Modified to include navigation to  (later ), a menu for adding PDFs via URL (), and a pull-to-refresh feature.
+
+-   ****:
+    -   **Summary**: This file defines the root layout for Expo Router, crucial for setting up global navigation (e.g., stack navigator) and ensuring correct routing across the application.
+    -   **Changes**: Created to resolve initial routing issues and ensure that dynamic routes like  are properly recognized and rendered by Expo Router.
+
+-   ****:
+    -   **Summary**: A screen dedicated to allowing users to add new PDFs by providing a URL. It includes URL validation and backend integration for saving the PDF.
+    -   **Changes**: Created to implement the add PDF from URL feature, including form inputs and submission logic.
+
+-   ****:
+    -   **Summary**: This is the dynamic route for displaying individual PDFs. It has undergone the most significant changes due to persistent issues with in-app PDF rendering. It initially aimed to display PDFs using  but shifted between various solutions.
+    -   **Changes**:
+        -   Initially, , then renamed to  for dynamic routing.
+        -   Multiple iterations of  implementation (direct iframe, Google Drive viewer, PDF.js integration) for in-app viewing.
+        -   Temporary shift to  for external PDF viewing when in-app solutions failed.
+        -   Re-introduction and extensive refactoring of the in-app  component to display PDFs using a more robust HTML structure for PDF.js.
+        -   Removal of the Open in Browser option and simplification of PDF viewing choices based on user feedback.
+        -   Numerous bug fixes, particularly addressing persistent SyntaxError and PDF Hazırlanıyor loading issues through code cleanup, style adjustments, and even file recreation.
+        -   The latest change involves setting up a canvas-based PDF.js solution within WebView to ensure reliable in-app viewing.
+</code_architecture>
+
+<pending_tasks>
+-   **AdMob Integration**: Implement Google AdMob for banner and interstitial advertisements.
+-   **Advanced PDF Editing**: Develop features for annotation, highlighting, and adding notes to PDFs.
+-   **Cloud Storage Integration**: Connect the application with cloud services like Google Drive and Dropbox.
+-   **Bare Workflow Migration**: Transition to a bare workflow to enable the use of native PDF viewer libraries for a more performant solution.
+</pending_tasks>
+
+<current_work>
+Currently, the AI engineer is focused on resolving a critical bug where the in-app PDF viewer gets stuck on a PDF Yükleniyor (PDF Loading) message. This issue has persisted despite multiple attempts to implement robust PDF rendering solutions.
+
+The latest approach involves building a sağlam bir altyapı (robust infrastructure) for in-app PDF viewing using **PDF.js with a canvas-based rendering approach** within the  component. The AI engineer acknowledges that truly native libraries require a bare workflow which is not currently the case, and thus is aiming for the most reliable managed Expo solution.
+
+The trajectory ends with the AI engineer having just initiated this new PDF.js canvas-based solution, starting with modifications to  to integrate the necessary HTML and JavaScript for PDF.js to render PDFs directly on a canvas within the . The next step outlined is to adjust the  to utilize this new PDF.js HTML.
+</current_work>
+
+<optional_next_step>
+Integrate the new PDF.js HTML structure into the WebView in .
+</optional_next_step>
