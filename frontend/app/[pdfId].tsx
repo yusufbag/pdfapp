@@ -576,7 +576,7 @@ export default function PDFViewer() {
             />
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.headerButton} onPress={sharePDF}>
+          <TouchableOpacity style={styles.headerButton} onPress={openPDFInBrowser}>
             <Ionicons name="share-outline" size={24} color="white" />
           </TouchableOpacity>
         </View>
