@@ -602,7 +602,10 @@ export default function PDFViewer() {
           <View style={styles.annotationToolbar}>
             <TouchableOpacity 
               style={styles.toolButton}
-              onPress={() => setShowAnnotationMode(false)}
+              onPress={() => {
+                setShowAnnotationMode(false);
+                setHighlightMode(false);
+              }}
             >
               <Text style={styles.toolButtonText}>✏️ Düzenleme Kapat</Text>
             </TouchableOpacity>
@@ -613,6 +616,29 @@ export default function PDFViewer() {
             >
               <Text style={styles.toolButtonText}>📝 Not Ekle</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.toolButton, highlightMode && styles.activeToolButton]}
+              onPress={() => setHighlightMode(!highlightMode)}
+            >
+              <Text style={styles.toolButtonText}>🖍️ İşaretleme</Text>
+            </TouchableOpacity>
+
+            {highlightMode && (
+              <View style={styles.colorPicker}>
+                {['#FFFF00', '#00FF00', '#00BFFF', '#FF69B4', '#FFA500'].map((color, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.colorButton,
+                      { backgroundColor: color },
+                      selectedHighlightColor === color && styles.selectedColorButton
+                    ]}
+                    onPress={() => setSelectedHighlightColor(color)}
+                  />
+                ))}
+              </View>
+            )}
             
             <TouchableOpacity 
               style={styles.toolButton}
