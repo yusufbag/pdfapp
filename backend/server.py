@@ -147,7 +147,7 @@ async def update_pdf(pdf_id: str, pdf_update: PDFUpdate):
             raise HTTPException(status_code=400, detail="Güncellenecek veri yok")
         
         # Güncelle
-        result = await db.pdfs.update_one(
+        result = await pdfs_collection.update_one(
             {"id": pdf_id},
             {"$set": update_data}
         )
@@ -156,7 +156,7 @@ async def update_pdf(pdf_id: str, pdf_update: PDFUpdate):
             raise HTTPException(status_code=404, detail="PDF bulunamadı")
         
         # Güncellenmiş PDF'i getir
-        updated_pdf = await db.pdfs.find_one({"id": pdf_id})
+        updated_pdf = await pdfs_collection.find_one({"id": pdf_id})
         return PDFFile(**updated_pdf)
     except HTTPException:
         raise
