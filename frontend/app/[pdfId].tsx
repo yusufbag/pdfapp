@@ -880,6 +880,12 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 16,
   },
+  annotationCount: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
   editButton: {
     backgroundColor: '#28a745',
     paddingHorizontal: 20,
