@@ -232,7 +232,7 @@ async def add_pdf_from_url(url_data: dict):
         )
         
         pdf_obj = PDFFile(**pdf_data.dict())
-        await db.pdfs.insert_one(pdf_obj.dict())
+        await pdfs_collection.insert_one(pdf_obj.dict())
         
         return pdf_obj
     except HTTPException:
