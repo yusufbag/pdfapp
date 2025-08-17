@@ -125,9 +125,7 @@ export default function Index() {
   };
 
   const openPDF = (pdf: PDFFile) => {
-    // PDF görüntüleyici sayfasına yönlendir
-    Alert.alert('PDF Açılıyor', `${pdf.name} açılıyor...`);
-    // TODO: Navigate to PDF viewer
+    router.push(`/pdf-viewer?pdfId=${pdf.id}`);
   };
 
   const deletePDF = async (pdfId: string) => {
