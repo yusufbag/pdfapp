@@ -168,7 +168,7 @@ async def update_pdf(pdf_id: str, pdf_update: PDFUpdate):
 async def delete_pdf(pdf_id: str):
     """PDF dosyasını sil"""
     try:
-        result = await db.pdfs.delete_one({"id": pdf_id})
+        result = await pdfs_collection.delete_one({"id": pdf_id})
         
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="PDF bulunamadı")
