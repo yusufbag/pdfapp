@@ -392,10 +392,6 @@ export default function PDFViewer() {
               color={pdf.isFavorite ? "#FFD700" : "white"} 
             />
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.headerButton} onPress={openPDFInBrowser}>
-            <Ionicons name="share-outline" size={24} color="white" />
-          </TouchableOpacity>
         </View>
       </View>
 
