@@ -253,11 +253,12 @@ async def view_pdf(pdf_id: str):
             from fastapi.responses import Response
             
             pdf_bytes = base64.b64decode(pdf["fileData"])
+            filename = pdf.get('name', 'document').encode('ascii', 'ignore').decode('ascii')
             return Response(
                 content=pdf_bytes,
                 media_type="application/pdf",
                 headers={
-                    "Content-Disposition": f"inline; filename=\"{pdf.get('name', 'document')}.pdf\"",
+                    "Content-Disposition": f"inline; filename=\"{filename}.pdf\"",
                     "Content-Length": str(len(pdf_bytes))
                 }
             )
@@ -268,11 +269,12 @@ async def view_pdf(pdf_id: str):
             
             base64_data = pdf["uri"].split("data:application/pdf;base64,")[1]
             pdf_bytes = base64.b64decode(base64_data)
+            filename = pdf.get('name', 'document').encode('ascii', 'ignore').decode('ascii')
             return Response(
                 content=pdf_bytes,
                 media_type="application/pdf",
                 headers={
-                    "Content-Disposition": f"inline; filename=\"{pdf.get('name', 'document')}.pdf\"",
+                    "Content-Disposition": f"inline; filename=\"{filename}.pdf\"",
                     "Content-Length": str(len(pdf_bytes))
                 }
             )
