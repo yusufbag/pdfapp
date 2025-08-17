@@ -38,8 +38,15 @@ export default function PDFViewer() {
     y: number;
     text: string;
     page: number;
+    type?: string;
+    color?: string;
+    width?: number;
+    height?: number;
+    text_content?: string;
   }>>([]);
   const [editingAnnotation, setEditingAnnotation] = useState<string | null>(null);
+  const [highlightMode, setHighlightMode] = useState(false);
+  const [selectedHighlightColor, setSelectedHighlightColor] = useState('#FFFF00');
   const [webViewLoading, setWebViewLoading] = useState(true);
 
   useEffect(() => {
