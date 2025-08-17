@@ -582,118 +582,98 @@ export default function PDFViewer() {
         </View>
       </View>
 
-      {/* PDF Viewer */}
+      {/* PDF Viewer Options */}
       <View style={styles.pdfContainer}>
-        {webViewLoading && (
-          <View style={styles.webViewLoading}>
-            <ActivityIndicator size="large" color="#E53E3E" />
-            <Text style={styles.loadingText}>PDF Hazırlanıyor...</Text>
-            <Text style={styles.loadingSubtext}>PDF.js ile yükleniyor...</Text>
+        <View style={styles.pdfOptionsContainer}>
+          <View style={styles.pdfIcon}>
+            <Ionicons name="document-text" size={80} color="#E53E3E" />
+          </View>
+          
+          <Text style={styles.pdfTitle}>{pdf.name}</Text>
+          <Text style={styles.pdfInfo}>
+            Boyut: {formatFileSize(pdf.size)} • {formatDate(pdf.dateAdded)}
+          </Text>
+          <Text style={styles.pdfTypeInfo}>
+            📍 Kaynak: {pdf.type === 'local' ? 'Cihazdan Yüklenen' : pdf.type === 'cloud' ? 'Cloud' : 'URL\'den Eklenen'}
+          </Text>
+          
+          <View style={styles.viewingOptions}>
+            <Text style={styles.optionsTitle}>PDF Görüntüleme Seçenekleri</Text>
             
-            {/* 8 saniye sonra alternatif çözüm öner */}
+            {/* Tarayıcıda Aç */}
             <TouchableOpacity 
-              style={[styles.skipButton, { marginTop: 20 }]} 
+              style={styles.optionButton} 
+              onPress={openPDFInBrowser}
+            >
+              <View style={styles.optionIconContainer}>
+                <Ionicons name="globe-outline" size={24} color="#E53E3E" />
+              </View>
+              <View style={styles.optionTextContainer}>
+                <Text style={styles.optionTitle}>Tarayıcıda Aç</Text>
+                <Text style={styles.optionDescription}>
+                  PDF'i varsayılan tarayıcıda görüntüle (Önerilen)
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            {/* Uygulama İçi Görüntüleyici (Sorunlu) */}
+            <TouchableOpacity 
+              style={[styles.optionButton, styles.disabledOption]} 
               onPress={() => {
-                setPdfError(false);
-                setWebViewLoading(false);
                 Alert.alert(
-                  'PDF Görüntüleme', 
-                  `${pdf?.name || 'Bu PDF'} tarayıcıda açılacak.`, 
-                  [
-                    { text: 'İptal', style: 'cancel' },
-                    { text: 'Tarayıcıda Aç', onPress: () => {
-                      // React Native'de WebBrowser kullanmak gerekir
-                      // Şimdilik alert gösterelim
-                      console.log('PDF tarayıcıda açılacak:', pdf?.uri);
-                    }}
-                  ]
+                  'Geliştirme Aşamasında',
+                  'Uygulama içi PDF görüntüleyici şu anda geliştirme aşamasındadır. Lütfen "Tarayıcıda Aç" seçeneğini kullanın.',
+                  [{ text: 'Tamam' }]
                 );
               }}
             >
-              <Text style={styles.skipText}>Yükleme Uzun Sürüyor? Tarayıcıda Aç</Text>
+              <View style={styles.optionIconContainer}>
+                <Ionicons name="phone-portrait-outline" size={24} color="#999" />
+              </View>
+              <View style={styles.optionTextContainer}>
+                <Text style={[styles.optionTitle, styles.disabledText]}>Uygulama İçinde Görüntüle</Text>
+                <Text style={[styles.optionDescription, styles.disabledText]}>
+                  PDF'i uygulama içinde aç (Geliştirme aşamasında)
+                </Text>
+              </View>
+              <View style={styles.developmentBadge}>
+                <Text style={styles.developmentText}>YAKINDA</Text>
+              </View>
             </TouchableOpacity>
-          </View>
-        )}
-        
-        {pdfError && (
-          <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={64} color="#E53E3E" />
-            <Text style={styles.errorTitle}>PDF Yüklenemedi</Text>
-            <Text style={styles.errorText}>
-              Dosya bozuk olabilir veya desteklenmiyor olabilir.
-            </Text>
+            
+            {/* Paylaş/İndir */}
             <TouchableOpacity 
-              style={styles.retryButton} 
+              style={styles.optionButton} 
               onPress={() => {
-                setPdfError(false);
-                setWebViewLoading(true);
-                // Force reload WebView
-                const webViewRef = React.createRef<any>();
-                if (webViewRef.current) {
-                  webViewRef.current.reload();
-                }
+                Alert.alert(
+                  'PDF Paylaş', 
+                  'PDF paylaşım özelliği gelecek güncellemede eklenecek.',
+                  [{ text: 'Tamam' }]
+                );
               }}
             >
-              <Ionicons name="refresh" size={20} color="white" />
-              <Text style={styles.retryText}>Tekrar Dene</Text>
+              <View style={styles.optionIconContainer}>
+                <Ionicons name="share-outline" size={24} color="#E53E3E" />
+              </View>
+              <View style={styles.optionTextContainer}>
+                <Text style={styles.optionTitle}>Paylaş / İndir</Text>
+                <Text style={styles.optionDescription}>
+                  PDF'i paylaş veya cihaza indir
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
           </View>
-        )}
-        
-        {!pdfError && (
-          <WebView
-            style={[styles.webView, webViewLoading && { opacity: 0 }]}
-            source={{ 
-              html: createPDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
-            }}
-            onMessage={handleWebViewMessage}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            allowsInlineMediaPlayback={true}
-            mediaPlaybackRequiresUserAction={false}
-            scalesPageToFit={true}
-            startInLoadingState={false}
-            onLoadStart={() => {
-              if (!pdfError) {
-                console.log('WebView load başladı');
-                setWebViewLoading(true);
-              }
-            }}
-            onLoadEnd={() => {
-              console.log('WebView load tamamlandı');
-              // PDF.js mesajları bekleniyor, loading durumu mesaj ile kontrol edilecek
-            }}
-            onError={(error) => {
-              console.log('WebView hatası:', error);
-              setWebViewLoading(false);
-              setPdfError(true);
-            }}
-            onHttpError={(error) => {
-              console.log('WebView HTTP hatası:', error);
-              setWebViewLoading(false);
-              setPdfError(true);
-            }}
-            // Debug için console log'ları yakala
-            onConsoleMessage={(event) => {
-              console.log('WebView Console:', event.nativeEvent.message);
-            }}
-            // Debug için
-            mixedContentMode="always"
-            allowsFullscreenVideo={false}
-            bounces={false}
-            scrollEnabled={false}
-          />
-        )}
-      </View>
-
-      {/* Footer Info */}
-      {!webViewLoading && !pdfError && (
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Boyut: {formatFileSize(pdf?.size || 0)}
-          </Text>
+          
+          <View style={styles.infoBox}>
+            <Ionicons name="information-circle" size={20} color="#3B82F6" />
+            <Text style={styles.infoText}>
+              En iyi görüntüleme deneyimi için "Tarayıcıda Aç" seçeneğini kullanın.
+            </Text>
+          </View>
         </View>
-      )}
+      </View>
     </SafeAreaView>
   );
 }
