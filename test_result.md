@@ -258,10 +258,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All tasks completed and tested"
-  stuck_tasks: []
+    - "PDF Görüntüleyici"
+  stuck_tasks: 
+    - "PDF Görüntüleyici"
   test_all: false
-  test_priority: "completed"
+  test_priority: "stuck_first"
 
 agent_communication:
     - agent: "main"
