@@ -643,7 +643,28 @@ export default function PDFViewer() {
           </TouchableOpacity>
         </View>
 
-        {/* WebView for PDF Display */}
+        {/* Alternative PDF Viewer for Web */}
+        {pdf.uri && (
+          <View style={styles.webPdfContainer}>
+            <Text style={styles.webPdfText}>
+              Web Preview - PDF'i açmak için aşağıdaki linke tıklayın:
+            </Text>
+            <TouchableOpacity 
+              style={styles.webPdfButton}
+              onPress={() => {
+                if (pdf.uri.startsWith('http')) {
+                  window.open(pdf.uri, '_blank');
+                } else {
+                  window.open(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdf.id}/view`, '_blank');
+                }
+              }}
+            >
+              <Text style={styles.webPdfButtonText}>🔗 PDF'i Yeni Sekmede Aç</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* WebView for Mobile - Native olarak çalışacak */}
         <WebView
           style={styles.webView}
           source={{ 
