@@ -413,26 +413,37 @@ export default function PDFViewer() {
             </Text>
             
             <View style={styles.viewingOptions}>
-              <Text style={styles.optionsTitle}>PDF Görüntüleme Seçenekleri</Text>
+              <Text style={styles.optionsTitle}>PDF Görüntüleme</Text>
               
               <TouchableOpacity style={styles.optionButton} onPress={openInAppViewer}>
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="phone-portrait-outline" size={24} color="#E53E3E" />
+                  <Ionicons name="document-text" size={24} color="#E53E3E" />
                 </View>
                 <View style={styles.optionTextContainer}>
-                  <Text style={styles.optionTitle}>Uygulama İçinde Görüntüle</Text>
-                  <Text style={styles.optionDescription}>PDF'i uygulama içinde aç (Beta)</Text>
+                  <Text style={styles.optionTitle}>PDF'i Görüntüle</Text>
+                  <Text style={styles.optionDescription}>PDF'i uygulama içinde aç</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#999" />
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.optionButton} onPress={openPDFInBrowser}>
+              <TouchableOpacity 
+                style={styles.optionButton} 
+                onPress={() => {
+                  Alert.alert(
+                    'PDF Paylaş', 
+                    'PDF paylaşım özelliği gelecek güncellemede eklenecek.',
+                    [{ text: 'Tamam' }]
+                  );
+                }}
+              >
                 <View style={styles.optionIconContainer}>
-                  <Ionicons name="globe-outline" size={24} color="#E53E3E" />
+                  <Ionicons name="share-outline" size={24} color="#E53E3E" />
                 </View>
                 <View style={styles.optionTextContainer}>
-                  <Text style={styles.optionTitle}>Tarayıcıda Aç</Text>
-                  <Text style={styles.optionDescription}>PDF'i varsayılan tarayıcıda görüntüle</Text>
+                  <Text style={styles.optionTitle}>Paylaş / İndir</Text>
+                  <Text style={styles.optionDescription}>
+                    PDF'i paylaş veya cihaza indir (Yakında)
+                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#999" />
               </TouchableOpacity>
