@@ -125,13 +125,19 @@ export default function PDFViewer() {
     router.back();
   };
 
-  // PDF görüntüleme için HTML içeriği oluştur - Mobil optimize
+  // PDF görüntüleme için HTML içeriği oluştur - Google Drive Viewer yaklaşımı  
   const createPDFViewerHTML = (pdfUri: string, fileData?: string) => {
     let pdfSrc = pdfUri;
     
     // Eğer base64 data varsa onu kullan
     if (fileData) {
       pdfSrc = `data:application/pdf;base64,${fileData}`;
+    }
+
+    // Google Drive Viewer URL'i oluştur (eğer external URL ise)
+    let viewerUrl = pdfSrc;
+    if (pdfSrc.startsWith('http') && !pdfSrc.includes('drive.google.com')) {
+      viewerUrl = `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdfSrc)}`;
     }
 
     return `
@@ -203,33 +209,6 @@ export default function PDFViewer() {
             text-align: center;
           }
           
-          .zoom-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-          }
-          
-          .zoom-button {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            min-width: 36px;
-            transition: all 0.2s;
-          }
-          
-          .zoom-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-          }
-          
-          .zoom-button:active {
-            transform: scale(0.95);
-          }
-          
           .spinner {
             width: 40px;
             height: 40px;
@@ -260,17 +239,32 @@ export default function PDFViewer() {
             font-size: 14px;
             cursor: pointer;
           }
+          
+          .simple-viewer {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            background: white;
+            padding: 20px;
+            text-align: center;
+          }
+          
+          .pdf-link {
+            display: inline-block;
+            background: #E53E3E;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            margin-top: 16px;
+          }
         </style>
       </head>
       <body>
         <div class="pdf-container">
           <div class="pdf-controls">
             <span id="status-text" class="status-text">📄 PDF Yükleniyor...</span>
-            <div class="zoom-controls">
-              <button class="zoom-button" onclick="zoomOut()">−</button>
-              <span id="zoom-level">100%</span>
-              <button class="zoom-button" onclick="zoomIn()">+</button>
-            </div>
+            <div style="font-size: 12px; opacity: 0.8;">PDF Viewer</div>
           </div>
           
           <div id="loading-container" class="loading-container">
@@ -282,8 +276,15 @@ export default function PDFViewer() {
           <div id="error-container" class="error-container" style="display: none;">
             <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
             <div class="status-text">PDF Yüklenemedi</div>
-            <div style="font-size: 14px; margin-top: 8px;">Dosya bozuk olabilir veya desteklenmiyor</div>
+            <div style="font-size: 14px; margin-top: 8px;">Dosya bozuk olabilir</div>
             <button class="retry-button" onclick="retryLoad()">Tekrar Dene</button>
+          </div>
+          
+          <div id="simple-viewer" class="simple-viewer">
+            <div style="font-size: 48px; margin-bottom: 16px;">📄</div>
+            <div class="status-text">PDF Görüntüleme</div>
+            <div style="font-size: 14px; margin-top: 8px; color: #666;">Bu PDF doğrudan görüntülenemiyor</div>
+            <a href="${pdfSrc}" target="_blank" class="pdf-link">PDF'i Tarayıcıda Aç</a>
           </div>
           
           <iframe 
@@ -293,22 +294,29 @@ export default function PDFViewer() {
             onload="onPDFLoad()"
             onerror="onPDFError()"
             title="PDF Viewer"
+            src="${viewerUrl}"
           ></iframe>
         </div>
         
         <script>
-          let currentZoom = 1;
           let pdfLoaded = false;
           let loadTimeout = null;
+          let attemptCount = 0;
           
-          // PDF yükleme timeout (10 saniye)
+          // PDF yükleme timeout (8 saniye)
           function startLoadTimeout() {
             clearTimeout(loadTimeout);
             loadTimeout = setTimeout(() => {
               if (!pdfLoaded) {
-                onPDFError();
+                attemptCount++;
+                if (attemptCount < 2) {
+                  // İkinci deneme: basit viewer'ı göster
+                  showSimpleViewer();
+                } else {
+                  onPDFError();
+                }
               }
-            }, 10000);
+            }, 8000);
           }
           
           function onPDFLoad() {
@@ -317,12 +325,12 @@ export default function PDFViewer() {
             
             document.getElementById('loading-container').style.display = 'none';
             document.getElementById('error-container').style.display = 'none';
+            document.getElementById('simple-viewer').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'block';
             document.getElementById('status-text').textContent = '✅ PDF Yüklendi';
             
             window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'pdfLoaded',
-              zoom: currentZoom
+              type: 'pdfLoaded'
             }));
           }
           
@@ -331,6 +339,7 @@ export default function PDFViewer() {
             
             document.getElementById('loading-container').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'none';
+            document.getElementById('simple-viewer').style.display = 'none';
             document.getElementById('error-container').style.display = 'flex';
             document.getElementById('status-text').textContent = '❌ PDF Yüklenemedi';
             
@@ -339,61 +348,43 @@ export default function PDFViewer() {
             }));
           }
           
+          function showSimpleViewer() {
+            clearTimeout(loadTimeout);
+            
+            document.getElementById('loading-container').style.display = 'none';
+            document.getElementById('error-container').style.display = 'none';
+            document.getElementById('pdf-viewer').style.display = 'none';
+            document.getElementById('simple-viewer').style.display = 'flex';
+            document.getElementById('status-text').textContent = '📄 PDF Mevcut';
+            
+            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'pdfPartialLoad'
+            }));
+          }
+          
           function retryLoad() {
             pdfLoaded = false;
+            attemptCount = 0;
             document.getElementById('loading-container').style.display = 'flex';
             document.getElementById('error-container').style.display = 'none';
+            document.getElementById('simple-viewer').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'none';
             document.getElementById('status-text').textContent = '🔄 Yeniden Yükleniyor...';
             
             // PDF'i yeniden yükle
             const iframe = document.getElementById('pdf-viewer');
-            iframe.src = iframe.src;
+            iframe.src = iframe.src + '&_retry=' + Date.now();
             startLoadTimeout();
-          }
-          
-          function zoomIn() {
-            if (currentZoom < 3) {
-              currentZoom += 0.25;
-              updateZoom();
-            }
-          }
-          
-          function zoomOut() {
-            if (currentZoom > 0.5) {
-              currentZoom -= 0.25;
-              updateZoom();
-            }
-          }
-          
-          function updateZoom() {
-            const iframe = document.getElementById('pdf-viewer');
-            const zoomLevel = document.getElementById('zoom-level');
-            
-            if (iframe && iframe.src) {
-              iframe.src = iframe.src.split('#')[0] + '#zoom=' + Math.round(currentZoom * 100);
-            }
-            
-            if (zoomLevel) {
-              zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
-            }
-            
-            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'zoomChanged',
-              zoom: currentZoom
-            }));
           }
           
           // PDF'i yükle
           function loadPDF() {
-            const iframe = document.getElementById('pdf-viewer');
-            iframe.src = '${pdfSrc}#zoom=100';
             startLoadTimeout();
           }
           
           // Sayfa yüklendiğinde PDF'i başlat
           window.onload = function() {
-            setTimeout(loadPDF, 100);
+            setTimeout(loadPDF, 500);
           };
         </script>
       </body>
