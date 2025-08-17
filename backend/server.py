@@ -327,9 +327,11 @@ async def get_pdf_annotations(pdf_id: str):
         # Annotations'ları getir
         annotations = []
         async for annotation in annotations_collection.find(
-            {"pdf_id": pdf_id},
-            {"_id": 0}  # MongoDB _id'sini dahil etme
+            {"pdf_id": pdf_id}
         ):
+            # MongoDB _id'sini çıkar
+            if "_id" in annotation:
+                del annotation["_id"]
             annotations.append(annotation)
         
         return {"annotations": annotations}
