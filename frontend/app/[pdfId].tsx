@@ -1010,8 +1010,8 @@ const styles = StyleSheet.create({
   },
   floatingBackText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
-    marginLeft: 4,
+    marginLeft: 8,
   },
 });
