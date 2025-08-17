@@ -364,6 +364,9 @@ async def add_pdf_annotation(pdf_id: str, annotation_data: dict):
             "text_content": annotation_data.get("text_content", ""),  # Highlighted text
             "start_offset": annotation_data.get("start_offset", 0),
             "end_offset": annotation_data.get("end_offset", 0),
+            "stroke_width": annotation_data.get("stroke_width", 2),  # Drawing stroke width
+            "drawing_data": annotation_data.get("drawing_data", ""),  # SVG path or drawing data
+            "tool": annotation_data.get("tool", "pen"),  # pen, highlighter, eraser
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
         }
