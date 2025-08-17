@@ -257,6 +257,8 @@ export default function PDFViewer() {
       'plain-text'
     );
   };
+
+  const showAddNoteDialog = () => {
     Alert.prompt(
       'Yeni Not',
       'PDF üzerine eklemek istediğiniz notu yazın:',
