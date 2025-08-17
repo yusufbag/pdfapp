@@ -732,7 +732,7 @@ export default function PDFViewer() {
           <WebView
             style={styles.webView}
             source={{ 
-              html: createSimplePDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
+              html: createSolidPDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
             }}
             onMessage={handleWebViewMessage}
             javaScriptEnabled={true}
@@ -741,6 +741,10 @@ export default function PDFViewer() {
             mediaPlaybackRequiresUserAction={false}
             scalesPageToFit={true}
             startInLoadingState={false}
+            mixedContentMode="always"
+            allowsFullscreenVideo={false}
+            bounces={false}
+            scrollEnabled={false}
           />
           
           {!webViewLoading && (
