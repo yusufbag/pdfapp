@@ -20,7 +20,7 @@ export default function RootLayout() {
           }} 
         />
         <Stack.Screen 
-          name="pdf-viewer" 
+          name="[pdfId]" 
           options={{
             title: 'PDF Görüntüleyici',
             presentation: 'card',
