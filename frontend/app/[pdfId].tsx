@@ -33,13 +33,34 @@ export default function PDFViewer() {
   const [pdf, setPdf] = useState<PDFFile | null>(null);
   const [loading, setLoading] = useState(true);
   const [webViewLoading, setWebViewLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [zoom, setZoom] = useState(1);
+  const [pdfError, setPdfError] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadPDF();
   }, [pdfId]);
+
+  useEffect(() => {
+    // 15 saniye timeout ekle
+    if (webViewLoading) {
+      const timeout = setTimeout(() => {
+        setWebViewLoading(false);
+        setPdfError(true);
+        Alert.alert('Zaman Aşımı', 'PDF yüklenirken zaman aşımına uğradı. Lütfen tekrar deneyin.');
+      }, 15000);
+      
+      setLoadingTimeout(timeout);
+      
+      return () => {
+        if (timeout) clearTimeout(timeout);
+      };
+    } else {
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        setLoadingTimeout(null);
+      }
+    }
+  }, [webViewLoading]);
 
   const loadPDF = async () => {
     try {
