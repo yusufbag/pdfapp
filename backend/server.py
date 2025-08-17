@@ -314,6 +314,123 @@ async def get_stats():
         logging.error(f"İstatistikler getirilirken hata: {e}")
         raise HTTPException(status_code=500, detail="İstatistikler getirilemedi")
 
+# PDF annotations endpoints
+@api_router.get("/pdfs/{pdf_id}/annotations")
+async def get_pdf_annotations(pdf_id: str):
+    """PDF'in tüm annotation'larını getir"""
+    try:
+        # PDF var mı kontrol et
+        pdf = await pdfs_collection.find_one({"id": pdf_id})
+        if not pdf:
+            raise HTTPException(status_code=404, detail="PDF bulunamadı")
+        
+        # Annotations'ları getir
+        annotations = []
+        async for annotation in annotations_collection.find(
+            {"pdf_id": pdf_id},
+            {"_id": 0}  # MongoDB _id'sini dahil etme
+        ):
+            annotations.append(annotation)
+        
+        return {"annotations": annotations}
+        
+    except Exception as e:
+        logger.error(f"Annotations getirme hatası: {str(e)}")
+        raise HTTPException(status_code=500, detail="Annotations getirilemedi")
+
+@api_router.post("/pdfs/{pdf_id}/annotations")
+async def add_pdf_annotation(pdf_id: str, annotation_data: dict):
+    """PDF'e yeni annotation ekle"""
+    try:
+        # PDF var mı kontrol et
+        pdf = await pdfs_collection.find_one({"id": pdf_id})
+        if not pdf:
+            raise HTTPException(status_code=404, detail="PDF bulunamadı")
+        
+        # Annotation oluştur
+        annotation = {
+            "id": str(uuid.uuid4()),
+            "pdf_id": pdf_id,
+            "type": annotation_data.get("type", "text"),  # text, highlight, drawing
+            "x": annotation_data.get("x", 0),
+            "y": annotation_data.get("y", 0),
+            "width": annotation_data.get("width", 0),
+            "height": annotation_data.get("height", 0),
+            "page": annotation_data.get("page", 1),
+            "content": annotation_data.get("content", ""),
+            "color": annotation_data.get("color", "#FFFF00"),
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        # Veritabanına kaydet
+        result = await annotations_collection.insert_one(annotation)
+        
+        if result.inserted_id:
+            return {"message": "Annotation başarıyla eklendi", "annotation": annotation}
+        else:
+            raise HTTPException(status_code=500, detail="Annotation eklenemedi")
+            
+    except Exception as e:
+        logger.error(f"Annotation ekleme hatası: {str(e)}")
+        raise HTTPException(status_code=500, detail="Annotation eklenemedi")
+
+@api_router.put("/pdfs/{pdf_id}/annotations/{annotation_id}")
+async def update_pdf_annotation(pdf_id: str, annotation_id: str, annotation_data: dict):
+    """PDF annotation'ını güncelle"""
+    try:
+        # Annotation var mı kontrol et
+        existing_annotation = await annotations_collection.find_one({
+            "id": annotation_id, 
+            "pdf_id": pdf_id
+        })
+        
+        if not existing_annotation:
+            raise HTTPException(status_code=404, detail="Annotation bulunamadı")
+        
+        # Güncellenecek alanlar
+        update_data = {
+            "content": annotation_data.get("content", existing_annotation.get("content")),
+            "x": annotation_data.get("x", existing_annotation.get("x")),
+            "y": annotation_data.get("y", existing_annotation.get("y")),
+            "color": annotation_data.get("color", existing_annotation.get("color")),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        # Güncelle
+        result = await annotations_collection.update_one(
+            {"id": annotation_id, "pdf_id": pdf_id},
+            {"$set": update_data}
+        )
+        
+        if result.modified_count > 0:
+            return {"message": "Annotation başarıyla güncellendi"}
+        else:
+            raise HTTPException(status_code=500, detail="Annotation güncellenemedi")
+            
+    except Exception as e:
+        logger.error(f"Annotation güncelleme hatası: {str(e)}")
+        raise HTTPException(status_code=500, detail="Annotation güncellenemedi")
+
+@api_router.delete("/pdfs/{pdf_id}/annotations/{annotation_id}")
+async def delete_pdf_annotation(pdf_id: str, annotation_id: str):
+    """PDF annotation'ını sil"""
+    try:
+        # Annotation var mı kontrol et ve sil
+        result = await annotations_collection.delete_one({
+            "id": annotation_id, 
+            "pdf_id": pdf_id
+        })
+        
+        if result.deleted_count > 0:
+            return {"message": "Annotation başarıyla silindi"}
+        else:
+            raise HTTPException(status_code=404, detail="Annotation bulunamadı")
+            
+    except Exception as e:
+        logger.error(f"Annotation silme hatası: {str(e)}")
+        raise HTTPException(status_code=500, detail="Annotation silinemedi")
+
 # Health check
 @api_router.get("/")
 async def root():
