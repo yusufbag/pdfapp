@@ -75,7 +75,7 @@ async def get_pdfs():
 async def get_favorite_pdfs():
     """Favori PDF dosyalarını getir"""
     try:
-        pdfs = await db.pdfs.find({"isFavorite": True}).to_list(1000)
+        pdfs = await pdfs_collection.find({"isFavorite": True}).to_list(1000)
         return [PDFFile(**pdf) for pdf in pdfs]
     except Exception as e:
         logging.error(f"Favori PDF'ler getirilirken hata: {e}")
