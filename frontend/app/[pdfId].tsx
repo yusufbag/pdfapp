@@ -125,19 +125,13 @@ export default function PDFViewer() {
     router.back();
   };
 
-  // PDF görüntüleme için HTML içeriği oluştur - Google Drive Viewer yaklaşımı  
+  // PDF görüntüleme için HTML içeriği oluştur - Direkt base64 yaklaşımı
   const createPDFViewerHTML = (pdfUri: string, fileData?: string) => {
     let pdfSrc = pdfUri;
     
-    // Eğer base64 data varsa onu kullan
+    // Eğer base64 data varsa onu kullan (Google Drive viewer değil, direkt iframe)
     if (fileData) {
       pdfSrc = `data:application/pdf;base64,${fileData}`;
-    }
-
-    // Google Drive Viewer URL'i oluştur (eğer external URL ise)
-    let viewerUrl = pdfSrc;
-    if (pdfSrc.startsWith('http') && !pdfSrc.includes('drive.google.com')) {
-      viewerUrl = `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdfSrc)}`;
     }
 
     return `
@@ -156,7 +150,7 @@ export default function PDFViewer() {
           
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #333;
             overflow: hidden;
           }
           
@@ -240,7 +234,7 @@ export default function PDFViewer() {
             cursor: pointer;
           }
           
-          .simple-viewer {
+          .alternative-viewer {
             flex: 1;
             display: none;
             flex-direction: column;
@@ -249,7 +243,7 @@ export default function PDFViewer() {
             text-align: center;
           }
           
-          .pdf-link {
+          .pdf-download {
             display: inline-block;
             background: #E53E3E;
             color: white;
@@ -257,6 +251,7 @@ export default function PDFViewer() {
             padding: 12px 24px;
             border-radius: 6px;
             margin-top: 16px;
+            font-size: 14px;
           }
         </style>
       </head>
@@ -270,21 +265,21 @@ export default function PDFViewer() {
           <div id="loading-container" class="loading-container">
             <div class="spinner"></div>
             <div class="status-text">PDF hazırlanıyor...</div>
-            <div style="font-size: 12px; color: #999; margin-top: 8px;">Lütfen bekleyin</div>
+            <div style="font-size: 12px; color: #999; margin-top: 8px;">Direkt yükleme denenecek</div>
           </div>
           
           <div id="error-container" class="error-container" style="display: none;">
             <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
             <div class="status-text">PDF Yüklenemedi</div>
-            <div style="font-size: 14px; margin-top: 8px;">Dosya bozuk olabilir</div>
-            <button class="retry-button" onclick="retryLoad()">Tekrar Dene</button>
+            <div style="font-size: 14px; margin-top: 8px;">Bu PDF tarayıcıda görüntülenemedi</div>
+            <button class="retry-button" onclick="showAlternative()">Alternatif Görüntüleme</button>
           </div>
           
-          <div id="simple-viewer" class="simple-viewer">
+          <div id="alternative-viewer" class="alternative-viewer">
             <div style="font-size: 48px; margin-bottom: 16px;">📄</div>
-            <div class="status-text">PDF Görüntüleme</div>
-            <div style="font-size: 14px; margin-top: 8px; color: #666;">Bu PDF doğrudan görüntülenemiyor</div>
-            <a href="${pdfSrc}" target="_blank" class="pdf-link">PDF'i Tarayıcıda Aç</a>
+            <div class="status-text">PDF Hazır</div>
+            <div style="font-size: 14px; margin-top: 8px; color: #666;">Bu PDF doğrudan görüntülenemedi, indirebilirsiniz</div>
+            <a href="${pdfSrc}" download="document.pdf" class="pdf-download">PDF'i İndir</a>
           </div>
           
           <iframe 
@@ -294,29 +289,21 @@ export default function PDFViewer() {
             onload="onPDFLoad()"
             onerror="onPDFError()"
             title="PDF Viewer"
-            src="${viewerUrl}"
           ></iframe>
         </div>
         
         <script>
           let pdfLoaded = false;
           let loadTimeout = null;
-          let attemptCount = 0;
           
-          // PDF yükleme timeout (8 saniye)
           function startLoadTimeout() {
             clearTimeout(loadTimeout);
             loadTimeout = setTimeout(() => {
               if (!pdfLoaded) {
-                attemptCount++;
-                if (attemptCount < 2) {
-                  // İkinci deneme: basit viewer'ı göster
-                  showSimpleViewer();
-                } else {
-                  onPDFError();
-                }
+                console.log('PDF yükleme timeout - alternatif gösteriliyor');
+                showAlternative();
               }
-            }, 8000);
+            }, 5000); // 5 saniye kısa timeout
           }
           
           function onPDFLoad() {
@@ -325,7 +312,7 @@ export default function PDFViewer() {
             
             document.getElementById('loading-container').style.display = 'none';
             document.getElementById('error-container').style.display = 'none';
-            document.getElementById('simple-viewer').style.display = 'none';
+            document.getElementById('alternative-viewer').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'block';
             document.getElementById('status-text').textContent = '✅ PDF Yüklendi';
             
@@ -335,56 +322,47 @@ export default function PDFViewer() {
           }
           
           function onPDFError() {
-            clearTimeout(loadTimeout);
-            
-            document.getElementById('loading-container').style.display = 'none';
-            document.getElementById('pdf-viewer').style.display = 'none';
-            document.getElementById('simple-viewer').style.display = 'none';
-            document.getElementById('error-container').style.display = 'flex';
-            document.getElementById('status-text').textContent = '❌ PDF Yüklenemedi';
-            
-            window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'pdfError'
-            }));
+            console.log('PDF iframe hatası - alternatif gösteriliyor');
+            showAlternative();
           }
           
-          function showSimpleViewer() {
+          function showAlternative() {
             clearTimeout(loadTimeout);
             
             document.getElementById('loading-container').style.display = 'none';
             document.getElementById('error-container').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'none';
-            document.getElementById('simple-viewer').style.display = 'flex';
+            document.getElementById('alternative-viewer').style.display = 'flex';
             document.getElementById('status-text').textContent = '📄 PDF Mevcut';
             
             window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({
-              type: 'pdfPartialLoad'
+              type: 'pdfAlternative'
             }));
           }
           
           function retryLoad() {
             pdfLoaded = false;
-            attemptCount = 0;
             document.getElementById('loading-container').style.display = 'flex';
             document.getElementById('error-container').style.display = 'none';
-            document.getElementById('simple-viewer').style.display = 'none';
+            document.getElementById('alternative-viewer').style.display = 'none';
             document.getElementById('pdf-viewer').style.display = 'none';
             document.getElementById('status-text').textContent = '🔄 Yeniden Yükleniyor...';
             
-            // PDF'i yeniden yükle
-            const iframe = document.getElementById('pdf-viewer');
-            iframe.src = iframe.src + '&_retry=' + Date.now();
-            startLoadTimeout();
+            loadPDF();
           }
           
-          // PDF'i yükle
+          // PDF'i direkt yükle
           function loadPDF() {
+            console.log('PDF direkt yükleniyor...');
+            const iframe = document.getElementById('pdf-viewer');
+            iframe.src = '${pdfSrc}';
             startLoadTimeout();
           }
           
           // Sayfa yüklendiğinde PDF'i başlat
           window.onload = function() {
-            setTimeout(loadPDF, 500);
+            console.log('HTML yüklendi, PDF başlatılıyor...');
+            setTimeout(loadPDF, 1000);
           };
         </script>
       </body>
