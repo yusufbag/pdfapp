@@ -213,21 +213,15 @@ frontend:
 
   - task: "PDF Görüntüleyici"
     implemented: true
-    working: false
-    file: "app/pdf-viewer.tsx"
+    working: "NA"
+    file: "app/[pdfId].tsx"
     stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "WebView tabanlı PDF görüntüleyici, zoom kontrolleri eklendi. Navigation test edilmeli"
-        - working: false
-        - agent: "testing"
-        - comment: "❌ ROUTING ISSUE: PDF görüntüleyici sayfasına navigasyon çalışmıyor. PDF öğelerine tıklandığında sayfa yüklenmiyor. Expo-router routing problemi olabilir."
-        - working: false
-        - agent: "testing"
-        - comment: "❌ STILL NOT WORKING: /pdf-viewer rotası hala çalışmıyor. Direct navigation ile /pdf-viewer?pdfId=xxx URL'sine gidildiğinde sayfa yüklenmiyor. Ana sayfadan PDF'lere tıklama da çalışmıyor. Router.push() problemi olabilir."
+        - comment: "Dynamic route [pdfId].tsx olarak yeniden adlandırıldı. Router navigation /${pdfId} formatına güncellendi. Expo-router dynamic routing kurgusu yapıldı"
         
   - task: "URL'den PDF Ekleme Sayfası"
     implemented: true
