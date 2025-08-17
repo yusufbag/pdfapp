@@ -384,6 +384,8 @@ async def add_pdf_annotation(pdf_id: str, annotation_data: dict):
         else:
             raise HTTPException(status_code=500, detail="Annotation eklenemedi")
             
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Annotation ekleme hatası: {str(e)}")
         raise HTTPException(status_code=500, detail="Annotation eklenemedi")
