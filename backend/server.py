@@ -261,6 +261,21 @@ async def view_pdf(pdf_id: str):
                     "Content-Length": str(len(pdf_bytes))
                 }
             )
+        elif pdf.get("uri", "").startswith("data:application/pdf;base64,"):
+            # URI'de base64 data varsa onu çıkar ve döndür
+            import base64
+            from fastapi.responses import Response
+            
+            base64_data = pdf["uri"].split("data:application/pdf;base64,")[1]
+            pdf_bytes = base64.b64decode(base64_data)
+            return Response(
+                content=pdf_bytes,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"inline; filename=\"{pdf.get('name', 'document')}.pdf\"",
+                    "Content-Length": str(len(pdf_bytes))
+                }
+            )
         else:
             # External URL ise redirect et
             from fastapi.responses import RedirectResponse
