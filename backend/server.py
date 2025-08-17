@@ -444,6 +444,8 @@ async def delete_pdf_annotation(pdf_id: str, annotation_id: str):
         else:
             raise HTTPException(status_code=404, detail="Annotation bulunamadı")
             
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Annotation silme hatası: {str(e)}")
         raise HTTPException(status_code=500, detail="Annotation silinemedi")
