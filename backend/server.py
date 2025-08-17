@@ -361,6 +361,9 @@ async def add_pdf_annotation(pdf_id: str, annotation_data: dict):
             "page": annotation_data.get("page", 1),
             "content": annotation_data.get("content", ""),
             "color": annotation_data.get("color", "#FFFF00"),
+            "text_content": annotation_data.get("text_content", ""),  # Highlighted text
+            "start_offset": annotation_data.get("start_offset", 0),
+            "end_offset": annotation_data.get("end_offset", 0),
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
         }
