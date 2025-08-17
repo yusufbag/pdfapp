@@ -276,11 +276,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "PDF Görüntüleyici"
+    - "PDF Annotation Sistemi"
   stuck_tasks: 
     - "PDF Görüntüleyici"
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 agent_communication:
     - agent: "main"
@@ -301,3 +301,5 @@ agent_communication:
     - message: "🔍 PDF YÜKLEME SORUNU TESPİT EDİLDİ VE ÇÖZÜLDİ: Backend'de PDF görüntüleme endpoint'inde (/api/pdfs/{id}/view) kritik bir hata vardı. Bazı PDF'ler URI alanında base64 data içeriyordu ancak fileData alanı boştu. Bu durumda endpoint data URI'ye redirect yapmaya çalışıyordu ve 502 hatası alıyordu. Sorunu çözdüm: artık URI'de base64 data varsa doğrudan PDF içeriği döndürülüyor. Tüm PDF'ler (10/10) artık doğru çalışıyor. PDF yükleme sorunu BACKEND kaynaklıydı ve çözüldü."
     - agent: "testing"
     - message: "⚠️ FRONTEND TEST LIMITATION: Backend API tamamen çalışıyor (10 PDF mevcut), ana sayfada PDF'ler görsel olarak yükleniyor ancak React Native Web rendering nedeniyle Playwright ile PDF elementlerine tıklama yapılamıyor. PDF.js WebView entegrasyonu otomatik test edilemedi. MANUEL TEST ÖNERİSİ: Kullanıcı ana sayfadan herhangi bir PDF'e tıklayıp 'PDF'i Görüntüle' butonuna basarak PDF.js yükleme durumunu test edebilir. Eğer 'PDF Yükleniyor' mesajında takılıyorsa WebView PDF.js implementasyonunda sorun var demektir."
+    - agent: "testing"
+    - message: "🎯 PDF ANNOTATION SİSTEMİ TEST TAMAMLANDI: PDF not ekleme sistemi TAM ÇALIŞIYOR! Tüm annotation API'leri başarıyla test edildi: ✅ GET /api/pdfs/{pdf_id}/annotations (annotation listeleme) ✅ POST /api/pdfs/{pdf_id}/annotations (yeni annotation ekleme) ✅ PUT /api/pdfs/{pdf_id}/annotations/{annotation_id} (annotation güncelleme) ✅ DELETE /api/pdfs/{pdf_id}/annotations/{annotation_id} (annotation silme). Test PDF ID 3eec1fb2-c9f1-4518-8d70-c3efce66b956 kullanılarak test edildi. MongoDB ObjectId serialization sorunu çözüldü. Annotation sistemi text, highlight gibi farklı tipleri, x/y koordinatları, renk, sayfa numarası gibi tüm alanları destekliyor. Backend annotation sistemi production-ready!"
