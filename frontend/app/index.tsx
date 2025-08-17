@@ -169,6 +169,10 @@ export default function Index() {
   // Kamera/Galeri PDF Çevirme Fonksiyonları
   const requestCameraPermission = async () => {
     try {
+      if (!ImagePicker.requestCameraPermissionsAsync) {
+        Alert.alert('Web Preview', 'Kamera özelliği sadece mobil uygulamada çalışır.');
+        return false;
+      }
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Hata', 'Kamera erişimi gerekiyor!');
@@ -176,13 +180,17 @@ export default function Index() {
       }
       return true;
     } catch (error) {
-      Alert.alert('Hata', 'Bu özellik web preview\'da çalışmaz. Mobil uygulamada deneyin.');
+      Alert.alert('Web Preview', 'Kamera özelliği sadece mobil uygulamada çalışır.');
       return false;
     }
   };
 
   const requestMediaLibraryPermission = async () => {
     try {
+      if (!ImagePicker.requestMediaLibraryPermissionsAsync) {
+        Alert.alert('Web Preview', 'Galeri özelliği sadece mobil uygulamada çalışır.');
+        return false;
+      }
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Hata', 'Galeri erişimi gerekiyor!');
@@ -190,13 +198,18 @@ export default function Index() {
       }
       return true;
     } catch (error) {
-      Alert.alert('Hata', 'Bu özellik web preview\'da çalışmaz. Mobil uygulamada deneyin.');
+      Alert.alert('Web Preview', 'Galeri özelliği sadece mobil uygulamada çalışır.');
       return false;
     }
   };
 
   const takePhotoAndConvertToPDF = async () => {
     try {
+      if (!ImagePicker.launchCameraAsync) {
+        Alert.alert('Web Preview', 'Kamera özelliği sadece mobil uygulamada çalışır.\n\nMobil uygulamada:\n• Kamera ile fotoğraf çekebilirsiniz\n• Otomatik PDF\'e çevirilir\n• PDF listesine eklenir');
+        return;
+      }
+
       const hasPermission = await requestCameraPermission();
       if (!hasPermission) return;
 
@@ -218,6 +231,11 @@ export default function Index() {
 
   const pickImageFromGallery = async () => {
     try {
+      if (!ImagePicker.launchImageLibraryAsync) {
+        Alert.alert('Web Preview', 'Galeri özelliği sadece mobil uygulamada çalışır.\n\nMobil uygulamada:\n• Galeriden resim seçebilirsiniz\n• Otomatik PDF\'e çevirilir\n• PDF listesine eklenir');
+        return;
+      }
+
       const hasPermission = await requestMediaLibraryPermission();
       if (!hasPermission) return;
 
