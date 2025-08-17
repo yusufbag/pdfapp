@@ -30,7 +30,15 @@ export default function PDFViewer() {
   const { pdfId } = useLocalSearchParams();
   const [pdf, setPdf] = useState<PDFFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'options' | 'viewer'>('options');
+  const [showAnnotationMode, setShowAnnotationMode] = useState(false);
+  const [annotations, setAnnotations] = useState<Array<{
+    id: string;
+    x: number;
+    y: number;
+    text: string;
+    page: number;
+  }>>([]);
+  const [editingAnnotation, setEditingAnnotation] = useState<string | null>(null);
   const [webViewLoading, setWebViewLoading] = useState(true);
 
   useEffect(() => {
