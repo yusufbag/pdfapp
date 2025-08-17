@@ -213,11 +213,11 @@ frontend:
 
   - task: "PDF Görüntüleyici"
     implemented: true
-    working: true
+    working: false
     file: "app/[pdfId].tsx"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
@@ -225,6 +225,12 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "✅ PDF GÖRÜNTÜLEYICI TEST PASSED: Dynamic routing [pdfId] başarıyla çalışıyor! Ana sayfadan PDF'lere tıklama ile /${pdfId} formatında navigation gerçekleşiyor. PDF viewer sayfası WebView ile PDF yükleme, zoom kontrolleri, favori butonu ve geri tuşu tam işlevsel. Expo restart sonrası routing sorunu çözüldü."
+        - working: false
+        - agent: "user"
+        - comment: "Kullanıcı 'PDF Yükleniyor' takılma sorunu bildirdi. PDF.js canvas-based çözümü mevcut ama hala takılıyor."
+        - working: "NA"
+        - agent: "main"
+        - comment: "Backend düzeltildi ve test edildi. PDF görüntüleme endpoint'i artık base64 data'yı doğru işliyor. Frontend PDF.js entegrasyonu test edilmeli."
         
   - task: "URL'den PDF Ekleme Sayfası"
     implemented: true
