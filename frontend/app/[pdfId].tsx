@@ -30,7 +30,9 @@ export default function PDFViewer() {
   const { pdfId } = useLocalSearchParams();
   const [pdf, setPdf] = useState<PDFFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'options' | 'viewer'>('options');
+  const [error, setError] = useState<string | null>(null);
+  const [webViewLoading, setWebViewLoading] = useState(true);
+  
   const [showAnnotationMode, setShowAnnotationMode] = useState(false);
   const [annotations, setAnnotations] = useState<Array<{
     id: string;
@@ -54,7 +56,6 @@ export default function PDFViewer() {
   const [selectedDrawingColor, setSelectedDrawingColor] = useState('#000000');
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [drawingTool, setDrawingTool] = useState('pen'); // pen, highlighter, eraser
-  const [webViewLoading, setWebViewLoading] = useState(true);
 
   useEffect(() => {
     loadPDF();
