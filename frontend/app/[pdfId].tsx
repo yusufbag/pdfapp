@@ -124,6 +124,9 @@ export default function PDFViewer() {
       pdfSrc = `data:application/pdf;base64,${fileData}`;
     }
 
+    // Escape the pdfSrc for JavaScript
+    const escapedPdfSrc = pdfSrc.replace(/'/g, "\\'").replace(/"/g, '\\"');
+
     return `
       <!DOCTYPE html>
       <html>
@@ -131,7 +134,8 @@ export default function PDFViewer() {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
         <title>PDF Görüntüleyici</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js"></script>
         <style>
           * {
             margin: 0;
