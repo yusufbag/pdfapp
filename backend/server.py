@@ -335,7 +335,7 @@ async def get_pdf_annotations(pdf_id: str):
         return {"annotations": annotations}
         
     except Exception as e:
-        logger.error(f"Annotations getirme hatası: {str(e)}")
+        logging.error(f"Annotations getirme hatası: {str(e)}")
         raise HTTPException(status_code=500, detail="Annotations getirilemedi")
 
 @api_router.post("/pdfs/{pdf_id}/annotations")
