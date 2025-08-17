@@ -187,11 +187,11 @@ frontend:
     file: "app/index.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "PDF listesi, favoriler tab'ları, PDF ekleme menüsü eklendi"
+        - comment: "PDF listesi, favoriler tab'ları, PDF ekleme menüsü eklendi. Backend testleri başarılı, frontend test edilmeli"
         
   - task: "PDF Görüntüleyici"
     implemented: true
@@ -199,11 +199,11 @@ frontend:
     file: "app/pdf-viewer.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "WebView tabanlı PDF görüntüleyici, zoom kontrolleri eklendi"
+        - comment: "WebView tabanlı PDF görüntüleyici, zoom kontrolleri eklendi. Navigation test edilmeli"
         
   - task: "URL'den PDF Ekleme Sayfası"
     implemented: true
@@ -211,11 +211,11 @@ frontend:
     file: "app/add-url.tsx"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
-        - comment: "URL'den PDF ekleme formu ve doğrulama eklendi"
+        - comment: "URL'den PDF ekleme formu ve doğrulama eklendi. Form submission test edilmeli"
 
 metadata:
   created_by: "main_agent"
