@@ -369,6 +369,9 @@ async def add_pdf_annotation(pdf_id: str, annotation_data: dict):
         result = await annotations_collection.insert_one(annotation)
         
         if result.inserted_id:
+            # MongoDB _id'sini çıkar
+            if "_id" in annotation:
+                del annotation["_id"]
             return {"message": "Annotation başarıyla eklendi", "annotation": annotation}
         else:
             raise HTTPException(status_code=500, detail="Annotation eklenemedi")
