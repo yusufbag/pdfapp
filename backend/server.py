@@ -103,7 +103,7 @@ async def create_pdf(pdf_data: PDFCreate):
         pdf_obj = PDFFile(**pdf_dict)
         
         # MongoDB'ye kaydet
-        await db.pdfs.insert_one(pdf_obj.dict())
+        await pdfs_collection.insert_one(pdf_obj.dict())
         return pdf_obj
     except Exception as e:
         logging.error(f"PDF oluşturulurken hata: {e}")
