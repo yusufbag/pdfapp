@@ -124,9 +124,7 @@ export default function PDFViewer() {
       pdfSrc = `data:application/pdf;base64,${fileData}`;
     }
 
-    // Escape the pdfSrc for JavaScript
-    const escapedPdfSrc = pdfSrc.replace(/'/g, "\\'").replace(/"/g, '\\"');
-
+    // Basit Google Drive Viewer çözümü
     return `
       <!DOCTYPE html>
       <html>
@@ -134,8 +132,6 @@ export default function PDFViewer() {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
         <title>PDF Görüntüleyici</title>
-        <!-- PDF.js Çalışan Stable Sürümü -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
         <style>
           * {
             margin: 0;
@@ -176,90 +172,12 @@ export default function PDFViewer() {
             flex: 1;
           }
           
-          .page-info {
-            font-size: 14px;
-            color: rgba(255,255,255,0.9);
-          }
-          
-          .pdf-content {
+          .pdf-frame {
             flex: 1;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            background: #2c2c2c;
-            overflow: hidden;
-          }
-          
-          .canvas-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: auto;
-            background: #1a1a1a;
-            padding: 20px;
-          }
-          
-          #pdf-canvas {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
             background: white;
-            image-rendering: crisp-edges;
-          }
-          
-          .pdf-controls {
-            background: rgba(0,0,0,0.9);
-            padding: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
-          }
-          
-          .control-button {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-            min-width: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          
-          .control-button:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
-          }
-          
-          .control-button:active {
-            transform: translateY(0);
-          }
-          
-          .control-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-          }
-          
-          .zoom-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-          }
-          
-          .zoom-level {
-            font-size: 14px;
-            color: rgba(255,255,255,0.8);
-            min-width: 60px;
-            text-align: center;
           }
           
           .loading-overlay {
@@ -305,280 +223,66 @@ export default function PDFViewer() {
             max-width: 280px;
             line-height: 1.5;
           }
-          
-          .error-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            padding: 20px;
-            text-align: center;
-          }
-          
-          .error-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-          }
-          
-          .error-title {
-            font-size: 20px;
-            color: #E53E3E;
-            font-weight: bold;
-            margin-bottom: 12px;
-          }
-          
-          .error-text {
-            font-size: 14px;
-            color: rgba(255,255,255,0.8);
-            line-height: 1.5;
-            margin-bottom: 24px;
-            max-width: 320px;
-          }
-          
-          .retry-button {
-            background: #E53E3E;
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-          }
-          
-          .retry-button:hover {
-            background: #C53030;
-            transform: translateY(-2px);
-          }
         </style>
       </head>
       <body>
         <div class="pdf-container">
           <div class="pdf-header">
             <div class="header-title">📄 PDF Görüntüleyici</div>
-            <div id="page-info" class="page-info">Yükleniyor...</div>
           </div>
           
-          <div class="pdf-content">
-            <!-- Loading Overlay -->
-            <div id="loading-overlay" class="loading-overlay">
-              <div class="loading-spinner"></div>
-              <div class="loading-text">PDF Hazırlanıyor</div>
-              <div class="loading-subtext">PDF.js ile güvenli yükleme yapılıyor</div>
-            </div>
-            
-            <!-- Error Container -->
-            <div id="error-container" class="error-container">
-              <div class="error-icon">❌</div>
-              <div class="error-title">PDF Yüklenemedi</div>
-              <div class="error-text">Bu PDF dosyası bozuk olabilir veya desteklenmiyor olabilir.</div>
-              <button class="retry-button" onclick="retryLoad()">🔄 Tekrar Dene</button>
-            </div>
-            
-            <!-- Canvas Container -->
-            <div class="canvas-container">
-              <canvas id="pdf-canvas" style="display: none;"></canvas>
-            </div>
+          <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">PDF Yükleniyor</div>
+            <div class="loading-subtext">Google Drive viewer ile güvenli görüntüleme</div>
           </div>
           
-          <!-- PDF Controls -->
-          <div class="pdf-controls">
-            <button id="prev-page" class="control-button" onclick="prevPage()">◀ Önceki</button>
-            <div class="zoom-controls">
-              <button class="control-button" onclick="zoomOut()">🔍−</button>
-              <div id="zoom-level" class="zoom-level">100%</div>
-              <button class="control-button" onclick="zoomIn()">🔍+</button>
-            </div>
-            <button id="next-page" class="control-button" onclick="nextPage()">Sonraki ▶</button>
-          </div>
+          <iframe 
+            id="pdf-frame" 
+            class="pdf-frame" 
+            style="display: none;"
+            src="https://docs.google.com/viewer?url=${encodeURIComponent(pdfSrc)}&embedded=true"
+            onload="hideLoading()"
+            onerror="showError()"
+          ></iframe>
         </div>
         
         <script type="text/javascript">
-          // PDF.js Configuration - Stable Sürüm 3.11.174
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          
-          let pdfDoc = null;
-          let currentPage = 1;
-          let totalPages = 1;
-          let scale = 1.2;
-          let isLoading = false;
-          
-          const canvas = document.getElementById('pdf-canvas');
-          const ctx = canvas.getContext('2d');
-          
-          async function loadPDF() {
-            if (isLoading) return;
-            isLoading = true;
+          function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('pdf-frame').style.display = 'block';
             
-            try {
-              console.log('PDF.js yükleme başladı:', '${escapedPdfSrc}');
-              
-              // Loading göster
-              showLoading();
-              
-              // PDF dosyasını yükle - UMD syntax kullan
-              const loadingTask = pdfjsLib.getDocument('${escapedPdfSrc}');
-              pdfDoc = await loadingTask.promise;
-              totalPages = pdfDoc.numPages;
-              
-              console.log('PDF başarıyla yüklendi. Sayfa sayısı:', totalPages);
-              
-              // İlk sayfayı render et
-              await renderPage(1);
-              
-              // UI'yi güncelle
-              hideLoading();
-              showCanvas();
-              updatePageInfo();
-              
-              // React Native'e bildir
-              if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  type: 'pdfLoaded',
-                  success: true,
-                  totalPages: totalPages
-                }));
-              }
-              
-            } catch (error) {
-              console.error('PDF yükleme hatası:', error);
-              showError();
-              
-              if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  type: 'pdfError',
-                  success: false,
-                  error: error.message || 'PDF yüklenemedi'
-                }));
-              }
-            } finally {
-              isLoading = false;
+            // React Native'e bildir
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'pdfLoaded',
+                success: true
+              }));
             }
-          }
-          
-          async function renderPage(pageNum) {
-            if (!pdfDoc || pageNum < 1 || pageNum > totalPages) return;
-            
-            try {
-              const page = await pdfDoc.getPage(pageNum);
-              
-              // Canvas boyutunu hesapla (mobile responsive)
-              const containerWidth = Math.min(window.innerWidth - 40, 800);
-              const viewport = page.getViewport({ scale: 1 });
-              const actualScale = Math.min(scale, containerWidth / viewport.width);
-              const scaledViewport = page.getViewport({ scale: actualScale });
-              
-              // Canvas boyutunu ayarla
-              canvas.height = scaledViewport.height;
-              canvas.width = scaledViewport.width;
-              
-              // Sayfayı render et
-              const renderContext = {
-                canvasContext: ctx,
-                viewport: scaledViewport
-              };
-              
-              await page.render(renderContext).promise;
-              currentPage = pageNum;
-              updatePageInfo();
-              
-              console.log('Sayfa render edildi:', pageNum);
-              
-            } catch (error) {
-              console.error('Sayfa render hatası:', error);
-              showError();
-            }
-          }
-          
-          function updatePageInfo() {
-            document.getElementById('page-info').textContent = currentPage + ' / ' + totalPages;
-            document.getElementById('prev-page').disabled = (currentPage <= 1);
-            document.getElementById('next-page').disabled = (currentPage >= totalPages);
-            document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
-          }
-          
-          function showLoading() {
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('error-container').style.display = 'none';
-            document.getElementById('pdf-canvas').style.display = 'none';
           }
           
           function showError() {
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('error-container').style.display = 'flex';
-            document.getElementById('pdf-canvas').style.display = 'none';
-          }
-          
-          function hideLoading() {
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('error-container').style.display = 'none';
-          }
-          
-          function showCanvas() {
-            document.getElementById('pdf-canvas').style.display = 'block';
-          }
-          
-          // Navigation Functions
-          window.prevPage = async function() {
-            if (currentPage > 1) {
-              await renderPage(currentPage - 1);
-            }
-          };
-          
-          window.nextPage = async function() {
-            if (currentPage < totalPages) {
-              await renderPage(currentPage + 1);
-            }
-          };
-          
-          // Zoom Functions
-          window.zoomIn = async function() {
-            if (scale < 3) {
-              scale += 0.25;
-              await renderPage(currentPage);
-            }
-          };
-          
-          window.zoomOut = async function() {
-            if (scale > 0.5) {
-              scale -= 0.25;
-              await renderPage(currentPage);
-            }
-          };
-          
-          window.retryLoad = function() {
-            loadPDF();
-          };
-          
-          // PDF.js initialization check ve auto load
-          window.addEventListener('load', () => {
-            console.log('PDF viewer HTML yüklendi');
+            document.getElementById('loading-overlay').innerHTML = \`
+              <div style="font-size: 64px; margin-bottom: 20px;">❌</div>
+              <div style="font-size: 20px; color: #E53E3E; margin-bottom: 12px;">PDF Yüklenemedi</div>
+              <div style="font-size: 14px; color: rgba(255,255,255,0.8);">Bu PDF dosyası bozuk olabilir veya desteklenmiyor olabilir.</div>
+            \`;
             
-            // PDF.js yüklenip yüklenmediğini kontrol et
-            if (typeof pdfjsLib === 'undefined') {
-              console.error('PDF.js kütüphanesi yüklenemedi');
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'pdfError',
+                success: false,
+                error: 'PDF yüklenemedi'
+              }));
+            }
+          }
+          
+          // 10 saniye sonra timeout
+          setTimeout(() => {
+            if (document.getElementById('loading-overlay').style.display !== 'none') {
               showError();
-              if (window.ReactNativeWebView) {
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                  type: 'pdfError',
-                  success: false,
-                  error: 'PDF.js library yüklenemedi'
-                }));
-              }
-              return;
             }
-            
-            console.log('PDF.js başarıyla yüklendi, PDF yükleme başlıyor...');
-            setTimeout(loadPDF, 500);
-          });
+          }, 10000);
         </script>
       </body>
       </html>
