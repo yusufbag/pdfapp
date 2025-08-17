@@ -43,10 +43,17 @@ export default function PDFViewer() {
     width?: number;
     height?: number;
     text_content?: string;
+    stroke_width?: number;
+    drawing_data?: string;
+    tool?: string;
   }>>([]);
   const [editingAnnotation, setEditingAnnotation] = useState<string | null>(null);
   const [highlightMode, setHighlightMode] = useState(false);
   const [selectedHighlightColor, setSelectedHighlightColor] = useState('#FFFF00');
+  const [drawingMode, setDrawingMode] = useState(false);
+  const [selectedDrawingColor, setSelectedDrawingColor] = useState('#000000');
+  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [drawingTool, setDrawingTool] = useState('pen'); // pen, highlighter, eraser
   const [webViewLoading, setWebViewLoading] = useState(true);
 
   useEffect(() => {
