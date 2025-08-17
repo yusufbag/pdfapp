@@ -11,25 +11,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-
-// Conditional imports for mobile-only features
-let ImagePicker: any = null;
-let Print: any = null;
-
-try {
-  ImagePicker = require('expo-image-picker');
-} catch {
-  console.log('expo-image-picker not available in web');
-}
-
-try {
-  Print = require('expo-print');
-} catch {
-  console.log('expo-print not available in web');
-}
 
 const EXPO_PUBLIC_BACKEND_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
 
