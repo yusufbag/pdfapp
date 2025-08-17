@@ -736,6 +736,15 @@ export default function PDFViewer() {
             </TouchableOpacity>
           )}
           
+          {highlightMode && (
+            <TouchableOpacity 
+              style={styles.testButton}
+              onPress={simulateHighlight}
+            >
+              <Text style={styles.testButtonText}>🧪 Test İşaretleme</Text>
+            </TouchableOpacity>
+          )}
+          
           <TouchableOpacity 
             style={styles.viewButton} 
             onPress={() => console.log('PDF uygulama içinde açılıyor:', pdf.name)}
