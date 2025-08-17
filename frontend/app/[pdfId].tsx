@@ -1063,6 +1063,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  testButton: {
+    backgroundColor: '#17a2b8',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   webPdfContainer: {
     backgroundColor: '#f8f9fa',
     padding: 20,
