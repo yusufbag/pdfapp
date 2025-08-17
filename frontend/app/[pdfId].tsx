@@ -58,6 +58,119 @@ export default function PDFViewer() {
 
   const EXPO_PUBLIC_BACKEND_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
 
+  useEffect(() => {
+    if (pdfId) {
+      fetchPdf();
+    }
+  }, [pdfId]);
+
+  useEffect(() => {
+    if (pdf) {
+      loadAnnotations();
+    }
+  }, [pdf]);
+
+  const fetchPdf = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPdf(data);
+      } else {
+        setError('PDF bulunamadı');
+      }
+    } catch (error) {
+      console.error('PDF yüklenirken hata:', error);
+      setError('PDF yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Annotation işlemleri
+  const loadAnnotations = async () => {
+    try {
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}/annotations`);
+      if (response.ok) {
+        const data = await response.json();
+        setAnnotations(data.annotations || []);
+      }
+    } catch (error) {
+      console.error('Annotations yüklenirken hata:', error);
+    }
+  };
+
+  const addAnnotation = async (x: number, y: number, text: string, page: number = 1) => {
+    try {
+      const annotationData = {
+        type: 'text',
+        x,
+        y,
+        width: 0,
+        height: 0,
+        page,
+        content: text,
+        color: '#FFFF00'
+      };
+
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/pdfs/${pdfId}/annotations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(annotationData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnnotations(prev => [...prev, result.annotation]);
+        return result.annotation;
+      } else {
+        throw new Error('Annotation eklenemedi');
+      }
+    } catch (error) {
+      console.error('Annotation ekleme hatası:', error);
+      Alert.alert('Hata', 'Not eklenemedi');
+      throw error;
+    }
+  };
+
+  const showAddNoteDialog = () => {
+    Alert.prompt(
+      'Yeni Not',
+      'PDF üzerine eklemek istediğiniz notu yazın:',
+      [
+        {
+          text: 'İptal',
+          style: 'cancel',
+        },
+        {
+          text: 'Ekle',
+          onPress: (text) => {
+            if (text && text.trim()) {
+              // Rastgele pozisyon (gerçek implementasyonda kullanıcı tıkladığı yeri kullanırız)
+              const randomX = Math.floor(Math.random() * 500) + 50;
+              const randomY = Math.floor(Math.random() * 300) + 50;
+              addAnnotation(randomX, randomY, text.trim());
+            }
+          },
+        },
+      ],
+      'plain-text'
+    );
+  };
+
+  const saveAnnotations = async () => {
+    try {
+      // Tüm annotation'lar zaten backend'e kaydedilmiş durumda
+      // Bu fonksiyon başka kaydetme işlemleri için kullanılabilir
+      Alert.alert('Başarılı', `${annotations.length} not kaydedildi.`);
+    } catch (error) {
+      Alert.alert('Hata', 'Notlar kaydedilemedi.');
+    }
+  };
+
   // Loading state için early return
   if (loading) {
     return (
@@ -84,15 +197,8 @@ export default function PDFViewer() {
     );
   }
 
-  useEffect(() => {
-    loadPDF();
-  }, [pdfId]);
-
-  useEffect(() => {
-    if (pdf) {
-      loadAnnotations();
-    }
-  }, [pdf]);
+  // Main component return
+  return (
 
   const loadPDF = async () => {
     try {
