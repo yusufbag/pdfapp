@@ -196,6 +196,18 @@ frontend:
         - agent: "testing"
         - comment: "✅ FRONTEND TEST PASSED: Ana sayfa başarıyla yüklendi. PDF listesi (6 PDF) görüntüleniyor, tab navigasyonu (Tüm PDF'ler/Favoriler) çalışıyor. Favoriler tab'ında 1 favori PDF görüntülendi. Pull-to-refresh özelliği mevcut. Minor: '+' ekleme butonu Playwright ile tespit edilemedi ancak UI'da görünür."
         
+  - task: "Expo Router Konfigürasyonu"
+    implemented: true
+    working: "NA"
+    file: "app/_layout.tsx"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "Eksik _layout.tsx dosyası oluşturuldu. Stack navigation ve route konfigürasyonları eklendi. Routing sorunu çözülmeli"
+
   - task: "PDF Görüntüleyici"
     implemented: true
     working: false
