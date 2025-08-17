@@ -444,4 +444,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  // Add Menu Styles
+  addMenuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+  },
+  addMenuBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  addMenu: {
+    position: 'absolute',
+    top: 70,
+    right: 16,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingVertical: 8,
+    minWidth: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  addMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  disabledMenuItem: {
+    opacity: 0.6,
+  },
+  addMenuText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    marginLeft: 12,
+  },
+  disabledText: {
+    color: '#999',
+  },
 });
