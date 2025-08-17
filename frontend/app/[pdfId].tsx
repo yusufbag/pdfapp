@@ -1005,6 +1005,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  retryButton: {
+    backgroundColor: '#E53E3E',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   pdfOptionsContainer: {
     flex: 1,
     padding: 20,
