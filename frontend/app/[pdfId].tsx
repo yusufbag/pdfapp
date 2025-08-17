@@ -46,6 +46,12 @@ export default function PDFViewer() {
     loadPDF();
   }, [pdfId]);
 
+  useEffect(() => {
+    if (pdf) {
+      loadAnnotations();
+    }
+  }, [pdf]);
+
   const loadPDF = async () => {
     try {
       setLoading(true);
