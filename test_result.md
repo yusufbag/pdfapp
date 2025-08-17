@@ -137,39 +137,48 @@ backend:
         
   - task: "URL'den PDF Ekleme"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "POST /api/pdfs/from-url endpoint eklendi"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ BACKEND TEST PASSED: URL-based PDF addition working correctly. POST /api/pdfs/from-url successfully adds PDFs from URLs. Tested with Mozilla PDF.js sample PDF. Proper error handling for missing URLs."
         
   - task: "Dosya Yükleme"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "POST /api/pdfs/upload multipart file upload endpoint eklendi"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ BACKEND TEST PASSED: File upload working perfectly. POST /api/pdfs/upload accepts multipart PDF files, validates content type, converts to base64, and stores correctly in database."
 
   - task: "İstatistikler"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "low"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "GET /api/stats endpoint eklendi"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ BACKEND TEST PASSED: Statistics endpoint working correctly. GET /api/stats returns comprehensive PDF statistics including total, favorites, and type breakdowns (local, cloud, URL PDFs)."
 
 frontend:
   - task: "Ana Sayfa PDF Listesi"
