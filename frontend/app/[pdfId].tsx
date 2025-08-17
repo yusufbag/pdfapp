@@ -117,7 +117,7 @@ export default function PDFViewer() {
     }
   };
 
-  const createSimplePDFViewerHTML = (pdfUri: string, fileData?: string) => {
+  const createSolidPDFViewerHTML = (pdfUri: string, fileData?: string) => {
     let pdfSrc = pdfUri;
     
     if (fileData) {
@@ -131,14 +131,28 @@ export default function PDFViewer() {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
         <title>PDF Görüntüleyici</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
         <style>
-          body {
+          * {
             margin: 0;
             padding: 0;
-            background: #333;
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #2c2c2c;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+          }
+          
+          .pdf-container {
+            width: 100%;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            background: #2c2c2c;
           }
           
           .pdf-header {
@@ -148,19 +162,100 @@ export default function PDFViewer() {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
           }
           
-          .pdf-container {
+          .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+          }
+          
+          .page-info {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+          }
+          
+          .pdf-content {
             flex: 1;
             position: relative;
-            background: white;
+            display: flex;
+            flex-direction: column;
+            background: #2c2c2c;
+            overflow: hidden;
           }
           
-          .pdf-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
+          .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            background: #1a1a1a;
+            padding: 20px;
+          }
+          
+          #pdf-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
             background: white;
+            image-rendering: crisp-edges;
+          }
+          
+          .pdf-controls {
+            background: rgba(0,0,0,0.9);
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+          }
+          
+          .control-button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .control-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+          }
+          
+          .control-button:active {
+            transform: translateY(0);
+          }
+          
+          .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+          
+          .zoom-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+          }
+          
+          .zoom-level {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            min-width: 60px;
+            text-align: center;
           }
           
           .loading-overlay {
@@ -169,7 +264,7 @@ export default function PDFViewer() {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(245, 245, 245, 0.95);
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -177,14 +272,14 @@ export default function PDFViewer() {
             z-index: 2000;
           }
           
-          .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid #E5E5E5;
+          .loading-spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid rgba(255,255,255,0.1);
             border-top: 4px solid #E53E3E;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
           }
           
           @keyframes spin {
@@ -192,107 +287,279 @@ export default function PDFViewer() {
             100% { transform: rotate(360deg); }
           }
           
+          .loading-text {
+            font-size: 18px;
+            color: white;
+            font-weight: 500;
+            margin-bottom: 8px;
+          }
+          
+          .loading-subtext {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            max-width: 280px;
+            line-height: 1.5;
+          }
+          
           .error-container {
-            flex: 1;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: #f5f5f5;
+            z-index: 2000;
             padding: 20px;
             text-align: center;
+          }
+          
+          .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+          }
+          
+          .error-title {
+            font-size: 20px;
+            color: #E53E3E;
+            font-weight: bold;
+            margin-bottom: 12px;
+          }
+          
+          .error-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.5;
+            margin-bottom: 24px;
+            max-width: 320px;
+          }
+          
+          .retry-button {
+            background: #E53E3E;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          
+          .retry-button:hover {
+            background: #C53030;
+            transform: translateY(-2px);
           }
         </style>
       </head>
       <body>
-        <div class="pdf-header">
-          <div>📄 PDF Görüntüleyici</div>
-          <div id="status">Yükleniyor...</div>
-        </div>
-        
         <div class="pdf-container">
-          <div id="loading-overlay" class="loading-overlay">
-            <div class="spinner"></div>
-            <div>PDF hazırlanıyor...</div>
+          <div class="pdf-header">
+            <div class="header-title">📄 PDF Görüntüleyici</div>
+            <div id="page-info" class="page-info">Yükleniyor...</div>
           </div>
           
-          <iframe 
-            id="pdf-iframe"
-            class="pdf-iframe"
-            src="${pdfSrc}"
-            onload="onPDFLoad()"
-            onerror="onPDFError()"
-          ></iframe>
+          <div class="pdf-content">
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" class="loading-overlay">
+              <div class="loading-spinner"></div>
+              <div class="loading-text">PDF Hazırlanıyor</div>
+              <div class="loading-subtext">PDF.js ile güvenli yükleme yapılıyor</div>
+            </div>
+            
+            <!-- Error Container -->
+            <div id="error-container" class="error-container">
+              <div class="error-icon">❌</div>
+              <div class="error-title">PDF Yüklenemedi</div>
+              <div class="error-text">Bu PDF dosyası bozuk olabilir veya desteklenmiyor olabilir.</div>
+              <button class="retry-button" onclick="retryLoad()">🔄 Tekrar Dene</button>
+            </div>
+            
+            <!-- Canvas Container -->
+            <div class="canvas-container">
+              <canvas id="pdf-canvas" style="display: none;"></canvas>
+            </div>
+          </div>
           
-          <div id="error-container" class="error-container">
-            <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
-            <div>PDF Yüklenemedi</div>
-            <button onclick="retryLoad()" style="margin-top: 16px; background: #E53E3E; color: white; border: none; padding: 12px 24px; border-radius: 6px;">
-              Tekrar Dene
-            </button>
+          <!-- PDF Controls -->
+          <div class="pdf-controls">
+            <button id="prev-page" class="control-button" onclick="prevPage()">◀ Önceki</button>
+            <div class="zoom-controls">
+              <button class="control-button" onclick="zoomOut()">🔍−</button>
+              <div id="zoom-level" class="zoom-level">100%</div>
+              <button class="control-button" onclick="zoomIn()">🔍+</button>
+            </div>
+            <button id="next-page" class="control-button" onclick="nextPage()">Sonraki ▶</button>
           </div>
         </div>
         
-        <script>
-          let loadTimeout = null;
-          let pdfLoaded = false;
+        <script type="module">
+          // PDF.js Configuration
+          import { getDocument, GlobalWorkerOptions } from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
           
-          function onPDFLoad() {
-            clearTimeout(loadTimeout);
-            pdfLoaded = true;
+          GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+          
+          let pdfDoc = null;
+          let currentPage = 1;
+          let totalPages = 1;
+          let scale = 1.2;
+          let isLoading = false;
+          
+          const canvas = document.getElementById('pdf-canvas');
+          const ctx = canvas.getContext('2d');
+          
+          async function loadPDF() {
+            if (isLoading) return;
+            isLoading = true;
             
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('error-container').style.display = 'none';
-            document.getElementById('status').textContent = '✅ PDF Yüklendi';
-            
-            if (window.ReactNativeWebView) {
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'pdfLoaded',
-                success: true
-              }));
+            try {
+              console.log('PDF.js yükleme başladı:', '${pdfSrc}');
+              
+              // Loading göster
+              showLoading();
+              
+              // PDF dosyasını yükle
+              const loadingTask = getDocument('${pdfSrc}');
+              pdfDoc = await loadingTask.promise;
+              totalPages = pdfDoc.numPages;
+              
+              console.log('PDF başarıyla yüklendi. Sayfa sayısı:', totalPages);
+              
+              // İlk sayfayı render et
+              await renderPage(1);
+              
+              // UI'yi güncelle
+              hideLoading();
+              showCanvas();
+              updatePageInfo();
+              
+              // React Native'e bildir
+              if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'pdfLoaded',
+                  success: true,
+                  totalPages: totalPages
+                }));
+              }
+              
+            } catch (error) {
+              console.error('PDF yükleme hatası:', error);
+              showError();
+              
+              if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'pdfError',
+                  success: false,
+                  error: error.message
+                }));
+              }
+            } finally {
+              isLoading = false;
             }
           }
           
-          function onPDFError() {
-            clearTimeout(loadTimeout);
+          async function renderPage(pageNum) {
+            if (!pdfDoc || pageNum < 1 || pageNum > totalPages) return;
             
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.getElementById('pdf-iframe').style.display = 'none';
-            document.getElementById('error-container').style.display = 'flex';
-            document.getElementById('status').textContent = '❌ Hata';
-            
-            if (window.ReactNativeWebView) {
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'pdfError',
-                success: false
-              }));
+            try {
+              const page = await pdfDoc.getPage(pageNum);
+              
+              // Canvas boyutunu hesapla (mobile responsive)
+              const containerWidth = Math.min(window.innerWidth - 40, 800);
+              const viewport = page.getViewport({ scale: 1 });
+              const actualScale = Math.min(scale, containerWidth / viewport.width);
+              const scaledViewport = page.getViewport({ scale: actualScale });
+              
+              // Canvas boyutunu ayarla
+              canvas.height = scaledViewport.height;
+              canvas.width = scaledViewport.width;
+              
+              // Sayfayı render et
+              const renderContext = {
+                canvasContext: ctx,
+                viewport: scaledViewport
+              };
+              
+              await page.render(renderContext).promise;
+              currentPage = pageNum;
+              updatePageInfo();
+              
+              console.log('Sayfa render edildi:', pageNum);
+              
+            } catch (error) {
+              console.error('Sayfa render hatası:', error);
             }
           }
           
-          function retryLoad() {
-            pdfLoaded = false;
+          function updatePageInfo() {
+            document.getElementById('page-info').textContent = currentPage + ' / ' + totalPages;
+            document.getElementById('prev-page').disabled = (currentPage <= 1);
+            document.getElementById('next-page').disabled = (currentPage >= totalPages);
+            document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+          }
+          
+          function showLoading() {
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('error-container').style.display = 'none';
-            document.getElementById('pdf-iframe').style.display = 'block';
-            document.getElementById('status').textContent = '🔄 Yeniden Yükleniyor...';
-            
-            const iframe = document.getElementById('pdf-iframe');
-            iframe.src = iframe.src + '?_retry=' + Date.now();
-            startLoadTimeout();
+            document.getElementById('pdf-canvas').style.display = 'none';
           }
           
-          function startLoadTimeout() {
-            clearTimeout(loadTimeout);
-            loadTimeout = setTimeout(() => {
-              if (!pdfLoaded) {
-                onPDFError();
-              }
-            }, 15000);
+          function showError() {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('error-container').style.display = 'flex';
+            document.getElementById('pdf-canvas').style.display = 'none';
           }
           
-          window.onload = function() {
-            startLoadTimeout();
+          function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+            document.getElementById('error-container').style.display = 'none';
+          }
+          
+          function showCanvas() {
+            document.getElementById('pdf-canvas').style.display = 'block';
+          }
+          
+          // Navigation Functions
+          window.prevPage = async function() {
+            if (currentPage > 1) {
+              await renderPage(currentPage - 1);
+            }
           };
+          
+          window.nextPage = async function() {
+            if (currentPage < totalPages) {
+              await renderPage(currentPage + 1);
+            }
+          };
+          
+          // Zoom Functions
+          window.zoomIn = async function() {
+            if (scale < 3) {
+              scale += 0.25;
+              await renderPage(currentPage);
+            }
+          };
+          
+          window.zoomOut = async function() {
+            if (scale > 0.5) {
+              scale -= 0.25;
+              await renderPage(currentPage);
+            }
+          };
+          
+          window.retryLoad = function() {
+            loadPDF();
+          };
+          
+          // Auto load PDF when page is ready
+          window.addEventListener('load', () => {
+            console.log('PDF viewer HTML yüklendi, PDF yükleme başlıyor...');
+            setTimeout(loadPDF, 500);
+          });
         </script>
       </body>
       </html>
