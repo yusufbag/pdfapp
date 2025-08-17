@@ -504,98 +504,149 @@ export default function PDFViewer() {
         </View>
       </View>
 
-      {/* PDF Viewer Options */}
-      <View style={styles.pdfContainer}>
-        <View style={styles.pdfOptionsContainer}>
-          <View style={styles.pdfIcon}>
-            <Ionicons name="document-text" size={80} color="#E53E3E" />
-          </View>
-          
-          <Text style={styles.pdfTitle}>{pdf.name}</Text>
-          <Text style={styles.pdfInfo}>
-            Boyut: {formatFileSize(pdf.size)} • {formatDate(pdf.dateAdded)}
-          </Text>
-          <Text style={styles.pdfTypeInfo}>
-            📍 Kaynak: {pdf.type === 'local' ? 'Cihazdan Yüklenen' : pdf.type === 'cloud' ? 'Cloud' : 'URL\'den Eklenen'}
-          </Text>
-          
-          <View style={styles.viewingOptions}>
-            <Text style={styles.optionsTitle}>PDF Görüntüleme Seçenekleri</Text>
+      {/* PDF Content - Options veya Viewer */}
+      {viewMode === 'options' ? (
+        <View style={styles.pdfContainer}>
+          <View style={styles.pdfOptionsContainer}>
+            <View style={styles.pdfIcon}>
+              <Ionicons name="document-text" size={80} color="#E53E3E" />
+            </View>
             
-            {/* Tarayıcıda Aç */}
-            <TouchableOpacity 
-              style={styles.optionButton} 
-              onPress={openPDFInBrowser}
-            >
-              <View style={styles.optionIconContainer}>
-                <Ionicons name="globe-outline" size={24} color="#E53E3E" />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <Text style={styles.optionTitle}>Tarayıcıda Aç</Text>
-                <Text style={styles.optionDescription}>
-                  PDF'i varsayılan tarayıcıda görüntüle (Önerilen)
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
-            
-            {/* Uygulama İçi Görüntüleyici (Sorunlu) */}
-            <TouchableOpacity 
-              style={[styles.optionButton, styles.disabledOption]} 
-              onPress={() => {
-                Alert.alert(
-                  'Geliştirme Aşamasında',
-                  'Uygulama içi PDF görüntüleyici şu anda geliştirme aşamasındadır. Lütfen "Tarayıcıda Aç" seçeneğini kullanın.',
-                  [{ text: 'Tamam' }]
-                );
-              }}
-            >
-              <View style={styles.optionIconContainer}>
-                <Ionicons name="phone-portrait-outline" size={24} color="#999" />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <Text style={[styles.optionTitle, styles.disabledText]}>Uygulama İçinde Görüntüle</Text>
-                <Text style={[styles.optionDescription, styles.disabledText]}>
-                  PDF'i uygulama içinde aç (Geliştirme aşamasında)
-                </Text>
-              </View>
-              <View style={styles.developmentBadge}>
-                <Text style={styles.developmentText}>YAKINDA</Text>
-              </View>
-            </TouchableOpacity>
-            
-            {/* Paylaş/İndir */}
-            <TouchableOpacity 
-              style={styles.optionButton} 
-              onPress={() => {
-                Alert.alert(
-                  'PDF Paylaş', 
-                  'PDF paylaşım özelliği gelecek güncellemede eklenecek.',
-                  [{ text: 'Tamam' }]
-                );
-              }}
-            >
-              <View style={styles.optionIconContainer}>
-                <Ionicons name="share-outline" size={24} color="#E53E3E" />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <Text style={styles.optionTitle}>Paylaş / İndir</Text>
-                <Text style={styles.optionDescription}>
-                  PDF'i paylaş veya cihaza indir
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.infoBox}>
-            <Ionicons name="information-circle" size={20} color="#3B82F6" />
-            <Text style={styles.infoText}>
-              En iyi görüntüleme deneyimi için "Tarayıcıda Aç" seçeneğini kullanın.
+            <Text style={styles.pdfTitle}>{pdf.name}</Text>
+            <Text style={styles.pdfInfo}>
+              Boyut: {formatFileSize(pdf.size)} • {formatDate(pdf.dateAdded)}
             </Text>
+            <Text style={styles.pdfTypeInfo}>
+              📍 Kaynak: {pdf.type === 'local' ? 'Cihazdan Yüklenen' : pdf.type === 'cloud' ? 'Cloud' : 'URL\'den Eklenen'}
+            </Text>
+            
+            <View style={styles.viewingOptions}>
+              <Text style={styles.optionsTitle}>PDF Görüntüleme Seçenekleri</Text>
+              
+              {/* Uygulama İçinde Görüntüle - Artık Aktif */}
+              <TouchableOpacity 
+                style={styles.optionButton} 
+                onPress={openInAppViewer}
+              >
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="phone-portrait-outline" size={24} color="#E53E3E" />
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>Uygulama İçinde Görüntüle</Text>
+                  <Text style={styles.optionDescription}>
+                    PDF'i uygulama içinde aç (Beta)
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </TouchableOpacity>
+              
+              {/* Tarayıcıda Aç */}
+              <TouchableOpacity 
+                style={styles.optionButton} 
+                onPress={openPDFInBrowser}
+              >
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="globe-outline" size={24} color="#E53E3E" />
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>Tarayıcıda Aç</Text>
+                  <Text style={styles.optionDescription}>
+                    PDF'i varsayılan tarayıcıda görüntüle (Önerilen)
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </TouchableOpacity>
+              
+              {/* Paylaş/İndir */}
+              <TouchableOpacity 
+                style={styles.optionButton} 
+                onPress={() => {
+                  Alert.alert(
+                    'PDF Paylaş', 
+                    'PDF paylaşım özelliği gelecek güncellemede eklenecek.',
+                    [{ text: 'Tamam' }]
+                  );
+                }}
+              >
+                <View style={styles.optionIconContainer}>
+                  <Ionicons name="share-outline" size={24} color="#E53E3E" />
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionTitle}>Paylaş / İndir</Text>
+                  <Text style={styles.optionDescription}>
+                    PDF'i paylaş veya cihaza indir
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.infoBox}>
+              <Ionicons name="information-circle" size={20} color="#3B82F6" />
+              <Text style={styles.infoText}>
+                En iyi görüntüleme deneyimi için "Tarayıcıda Aç" seçeneğini kullanın.
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
+      ) : (
+        // PDF Viewer Mode
+        <View style={styles.pdfViewerContainer}>
+          {webViewLoading && (
+            <View style={styles.webViewLoading}>
+              <ActivityIndicator size="large" color="#E53E3E" />
+              <Text style={styles.loadingText}>PDF Yükleniyor...</Text>
+              <Text style={styles.loadingSubtext}>Uygulama içi görüntüleme</Text>
+              
+              <TouchableOpacity 
+                style={styles.backToOptionsButton} 
+                onPress={() => {
+                  setViewMode('options');
+                  setWebViewLoading(true);
+                }}
+              >
+                <Text style={styles.backToOptionsText}>← Seçeneklere Dön</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          <WebView
+            style={styles.webView}
+            source={{ 
+              html: createSimplePDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
+            }}
+            onMessage={handleWebViewMessage}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            allowsInlineMediaPlayback={true}
+            mediaPlaybackRequiresUserAction={false}
+            scalesPageToFit={true}
+            startInLoadingState={false}
+            onLoadStart={() => {
+              console.log('PDF WebView yükleme başladı');
+            }}
+            onLoadEnd={() => {
+              console.log('PDF WebView yükleme tamamlandı');
+            }}
+            onError={(error) => {
+              console.log('PDF WebView hatası:', error);
+              setWebViewLoading(false);
+              Alert.alert('Hata', 'PDF yüklenirken bir sorun oluştu.');
+            }}
+          />
+          
+          {/* Back to Options Button - Fixed Position */}
+          {!webViewLoading && (
+            <TouchableOpacity 
+              style={styles.floatingBackButton} 
+              onPress={() => setViewMode('options')}
+            >
+              <Ionicons name="arrow-back" size={20} color="white" />
+              <Text style={styles.floatingBackText}>Seçenekler</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
