@@ -180,6 +180,21 @@ backend:
         - agent: "testing"
         - comment: "✅ BACKEND TEST PASSED: Statistics endpoint working correctly. GET /api/stats returns comprehensive PDF statistics including total, favorites, and type breakdowns (local, cloud, URL PDFs)."
 
+  - task: "PDF Annotation Sistemi"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "PDF annotation CRUD API'leri eklendi: GET /api/pdfs/{pdf_id}/annotations, POST /api/pdfs/{pdf_id}/annotations, PUT /api/pdfs/{pdf_id}/annotations/{annotation_id}, DELETE /api/pdfs/{pdf_id}/annotations/{annotation_id}"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ BACKEND TEST PASSED: PDF Annotation sistemi tam çalışıyor! Tüm CRUD operasyonları başarılı: GET annotations (listeleme), POST annotations (yeni ekleme), PUT annotations (güncelleme), DELETE annotations (silme). Test PDF ID 3eec1fb2-c9f1-4518-8d70-c3efce66b956 ile test edildi. MongoDB ObjectId serialization sorunu çözüldü. Annotation'lar text, highlight gibi farklı tipleri destekliyor, x/y koordinatları, renk, sayfa numarası gibi tüm alanlar çalışıyor."
+
 frontend:
   - task: "Ana Sayfa PDF Listesi"
     implemented: true
