@@ -32,6 +32,8 @@ export default function Index() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'favorites'>('all');
 
+  const [showAddMenu, setShowAddMenu] = useState(false);
+
   useEffect(() => {
     loadPDFs();
     loadFavorites();
