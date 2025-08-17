@@ -183,39 +183,48 @@ backend:
 frontend:
   - task: "Ana Sayfa PDF Listesi"
     implemented: true
-    working: "NA"
+    working: true
     file: "app/index.tsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "PDF listesi, favoriler tab'ları, PDF ekleme menüsü eklendi. Backend testleri başarılı, frontend test edilmeli"
+        - working: true
+        - agent: "testing"
+        - comment: "✅ FRONTEND TEST PASSED: Ana sayfa başarıyla yüklendi. PDF listesi (6 PDF) görüntüleniyor, tab navigasyonu (Tüm PDF'ler/Favoriler) çalışıyor. Favoriler tab'ında 1 favori PDF görüntülendi. Pull-to-refresh özelliği mevcut. Minor: '+' ekleme butonu Playwright ile tespit edilemedi ancak UI'da görünür."
         
   - task: "PDF Görüntüleyici"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/pdf-viewer.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "WebView tabanlı PDF görüntüleyici, zoom kontrolleri eklendi. Navigation test edilmeli"
+        - working: false
+        - agent: "testing"
+        - comment: "❌ ROUTING ISSUE: PDF görüntüleyici sayfasına navigasyon çalışmıyor. PDF öğelerine tıklandığında sayfa yüklenmiyor. Expo-router routing problemi olabilir."
         
   - task: "URL'den PDF Ekleme Sayfası"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/add-url.tsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
     needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
         - comment: "URL'den PDF ekleme formu ve doğrulama eklendi. Form submission test edilmeli"
+        - working: false
+        - agent: "testing"
+        - comment: "❌ ROUTING ISSUE: /add-url rotası 'Unmatched Route' hatası veriyor. Expo-router konfigürasyonu eksik veya hatalı. Sayfa dosyası mevcut ancak routing çalışmıyor."
 
 metadata:
   created_by: "main_agent"
@@ -224,8 +233,12 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "PDF Görüntüleyici"
+    - "URL'den PDF Ekleme Sayfası"
+  stuck_tasks:
+    - "PDF Görüntüleyici"
+    - "URL'den PDF Ekleme Sayfası"
   test_all: false
   test_priority: "high_first"
 
@@ -234,3 +247,5 @@ agent_communication:
     - message: "Backend testleri başarıyla tamamlandı. Tüm API endpoint'leri çalışıyor. Şimdi frontend test edilecek. Kullanıcı otomatik frontend test istedi. Lütfen mobile boyutlarda (390x844) test et."
     - agent: "testing"
     - message: "✅ BACKEND TESTING COMPLETE: All backend APIs tested successfully! Created comprehensive test suite (backend_test.py) and tested all endpoints: PDF CRUD operations, favorites system, file upload, URL-based PDF addition, statistics, and health check. All tests passing with proper error handling. MongoDB connection working correctly. Backend is production-ready."
+    - agent: "testing"
+    - message: "🔍 FRONTEND TESTING COMPLETE: Ana sayfa çalışıyor ancak routing sorunları var. PDF görüntüleyici ve URL ekleme sayfalarına navigasyon başarısız. Expo-router konfigürasyonu eksik - _layout.tsx dosyası yok. Bu kritik routing sorunu çözülmeli."
