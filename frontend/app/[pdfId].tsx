@@ -620,6 +620,12 @@ export default function PDFViewer() {
         <View style={styles.viewerContainer}>
           <Text style={styles.viewerTitle}>📄 PDF Görüntüleyici</Text>
           
+          {annotations.length > 0 && (
+            <Text style={styles.annotationCount}>
+              📝 {annotations.length} not mevcut
+            </Text>
+          )}
+          
           {!showAnnotationMode && (
             <TouchableOpacity 
               style={styles.editButton}
