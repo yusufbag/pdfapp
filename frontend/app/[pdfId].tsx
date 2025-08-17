@@ -682,6 +682,7 @@ export default function PDFViewer() {
               onPress={() => {
                 setShowAnnotationMode(false);
                 setHighlightMode(false);
+                setDrawingMode(false);
               }}
             >
               <Text style={styles.toolButtonText}>✏️ Düzenleme Kapat</Text>
@@ -696,9 +697,22 @@ export default function PDFViewer() {
 
             <TouchableOpacity 
               style={[styles.toolButton, highlightMode && styles.activeToolButton]}
-              onPress={() => setHighlightMode(!highlightMode)}
+              onPress={() => {
+                setHighlightMode(!highlightMode);
+                setDrawingMode(false);
+              }}
             >
               <Text style={styles.toolButtonText}>🖍️ İşaretleme</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.toolButton, drawingMode && styles.activeToolButton]}
+              onPress={() => {
+                setDrawingMode(!drawingMode);
+                setHighlightMode(false);
+              }}
+            >
+              <Text style={styles.toolButtonText}>✏️ Çizim</Text>
             </TouchableOpacity>
 
             {highlightMode && (
@@ -714,6 +728,58 @@ export default function PDFViewer() {
                     onPress={() => setSelectedHighlightColor(color)}
                   />
                 ))}
+              </View>
+            )}
+
+            {drawingMode && (
+              <View style={styles.drawingToolbar}>
+                {/* Drawing Colors */}
+                <View style={styles.colorPicker}>
+                  {['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF'].map((color, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.colorButton,
+                        { backgroundColor: color },
+                        selectedDrawingColor === color && styles.selectedColorButton
+                      ]}
+                      onPress={() => setSelectedDrawingColor(color)}
+                    />
+                  ))}
+                </View>
+                
+                {/* Stroke Width Selector */}
+                <View style={styles.strokeSelector}>
+                  {[1, 2, 4, 6].map((width) => (
+                    <TouchableOpacity
+                      key={width}
+                      style={[
+                        styles.strokeButton,
+                        strokeWidth === width && styles.selectedStrokeButton
+                      ]}
+                      onPress={() => setStrokeWidth(width)}
+                    >
+                      <View style={[styles.strokePreview, { height: width * 2, backgroundColor: selectedDrawingColor }]} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Drawing Tools */}
+                <View style={styles.toolSelector}>
+                  <TouchableOpacity
+                    style={[styles.drawingToolButton, drawingTool === 'pen' && styles.activeDrawingTool]}
+                    onPress={() => setDrawingTool('pen')}
+                  >
+                    <Text style={styles.drawingToolText}>🖊️</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[styles.drawingToolButton, drawingTool === 'highlighter' && styles.activeDrawingTool]}
+                    onPress={() => setDrawingTool('highlighter')}
+                  >
+                    <Text style={styles.drawingToolText}>🖍️</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
             
