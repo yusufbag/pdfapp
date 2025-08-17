@@ -392,22 +392,29 @@ export default function PDFViewer() {
       switch (data.type) {
         case 'pdfLoaded':
           setWebViewLoading(false);
-          setZoom(data.zoom || 1);
+          setPdfError(false);
+          if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+            setLoadingTimeout(null);
+          }
           break;
         case 'pdfError':
           setWebViewLoading(false);
-          Alert.alert('Hata', 'PDF yüklenemedi. Dosya bozuk olabilir.');
+          setPdfError(true);
+          if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+            setLoadingTimeout(null);
+          }
+          Alert.alert('Hata', 'PDF yüklenemedi. Dosya bozuk olabilir veya desteklenmiyor.');
           break;
         case 'zoomChanged':
-          setZoom(data.zoom || 1);
-          break;
-        case 'pageInfo':
-          setCurrentPage(data.currentPage || 1);
-          setTotalPages(data.totalPages || 1);
+          // Zoom değişikliği handle edilebilir
           break;
       }
     } catch (error) {
       console.log('WebView mesaj işleme hatası:', error);
+      setWebViewLoading(false);
+      setPdfError(true);
     }
   };
 
