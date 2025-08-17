@@ -255,7 +255,7 @@ test_plan:
 
 agent_communication:
     - agent: "main"
-    - message: "Backend testleri başarıyla tamamlandı. Tüm API endpoint'leri çalışıyor. Şimdi frontend test edilecek. Kullanıcı otomatik frontend test istedi. Lütfen mobile boyutlarda (390x844) test et."
+    - message: "Routing sorunu tespit edildi ve _layout.tsx dosyası eklendi. Expo router konfigürasyonu tamamlandı. Şimdi routing çözümü test edilecek."
     - agent: "testing"
     - message: "✅ BACKEND TESTING COMPLETE: All backend APIs tested successfully! Created comprehensive test suite (backend_test.py) and tested all endpoints: PDF CRUD operations, favorites system, file upload, URL-based PDF addition, statistics, and health check. All tests passing with proper error handling. MongoDB connection working correctly. Backend is production-ready."
     - agent: "testing"
