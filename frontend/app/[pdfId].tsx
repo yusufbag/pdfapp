@@ -479,41 +479,78 @@ export default function PDFViewer() {
           <View style={styles.webViewLoading}>
             <ActivityIndicator size="large" color="#E53E3E" />
             <Text style={styles.loadingText}>PDF Hazırlanıyor...</Text>
+            <Text style={styles.loadingSubtext}>Bu biraz zaman alabilir</Text>
           </View>
         )}
         
-        <WebView
-          style={[styles.webView, webViewLoading && { opacity: 0 }]}
-          source={{ 
-            html: createPDFViewerHTML(pdf.uri, pdf.fileData) 
-          }}
-          onMessage={handleWebViewMessage}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          scalesPageToFit={true}
-          startInLoadingState={false}
-          onLoadStart={() => setWebViewLoading(true)}
-          onLoadEnd={() => setWebViewLoading(false)}
-          onError={() => {
-            setWebViewLoading(false);
-            Alert.alert('Hata', 'PDF yüklenirken bir sorun oluştu.');
-          }}
-        />
+        {pdfError && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={64} color="#E53E3E" />
+            <Text style={styles.errorTitle}>PDF Yüklenemedi</Text>
+            <Text style={styles.errorText}>
+              Dosya bozuk olabilir veya desteklenmiyor olabilir.
+            </Text>
+            <TouchableOpacity 
+              style={styles.retryButton} 
+              onPress={() => {
+                setPdfError(false);
+                setWebViewLoading(true);
+                // Force reload WebView
+                const webViewRef = React.createRef<any>();
+                if (webViewRef.current) {
+                  webViewRef.current.reload();
+                }
+              }}
+            >
+              <Ionicons name="refresh" size={20} color="white" />
+              <Text style={styles.retryText}>Tekrar Dene</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        
+        {!pdfError && (
+          <WebView
+            style={[styles.webView, webViewLoading && { opacity: 0 }]}
+            source={{ 
+              html: createPDFViewerHTML(pdf?.uri || '', pdf?.fileData) 
+            }}
+            onMessage={handleWebViewMessage}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            allowsInlineMediaPlayback={true}
+            mediaPlaybackRequiresUserAction={false}
+            scalesPageToFit={true}
+            startInLoadingState={false}
+            onLoadStart={() => {
+              if (!pdfError) {
+                setWebViewLoading(true);
+              }
+            }}
+            onLoadEnd={() => {
+              // Loading durumu WebView mesajları ile kontrol edilecek
+            }}
+            onError={(error) => {
+              console.log('WebView hatası:', error);
+              setWebViewLoading(false);
+              setPdfError(true);
+            }}
+            onHttpError={(error) => {
+              console.log('WebView HTTP hatası:', error);
+              setWebViewLoading(false);
+              setPdfError(true);
+            }}
+          />
+        )}
       </View>
 
       {/* Footer Info */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Zoom: {Math.round(zoom * 100)}% • Boyut: {formatFileSize(pdf.size)}
-        </Text>
-        {totalPages > 1 && (
+      {!webViewLoading && !pdfError && (
+        <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Sayfa: {currentPage}/{totalPages}
+            Boyut: {formatFileSize(pdf?.size || 0)}
           </Text>
-        )}
-      </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
