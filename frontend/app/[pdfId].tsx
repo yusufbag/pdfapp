@@ -599,11 +599,13 @@ export default function PDFViewer() {
             startInLoadingState={false}
             onLoadStart={() => {
               if (!pdfError) {
+                console.log('WebView load başladı');
                 setWebViewLoading(true);
               }
             }}
             onLoadEnd={() => {
-              // Loading durumu WebView mesajları ile kontrol edilecek
+              console.log('WebView load tamamlandı');
+              // PDF.js mesajları bekleniyor, loading durumu mesaj ile kontrol edilecek
             }}
             onError={(error) => {
               console.log('WebView hatası:', error);
@@ -615,6 +617,15 @@ export default function PDFViewer() {
               setWebViewLoading(false);
               setPdfError(true);
             }}
+            // Debug için console log'ları yakala
+            onConsoleMessage={(event) => {
+              console.log('WebView Console:', event.nativeEvent.message);
+            }}
+            // Debug için
+            mixedContentMode="always"
+            allowsFullscreenVideo={false}
+            bounces={false}
+            scrollEnabled={false}
           />
         )}
       </View>
